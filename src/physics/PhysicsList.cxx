@@ -88,13 +88,4 @@ namespace marex
         // SetCutValue(1 * um, "e+");
         SetCutValue(0 * mm, "neutron");
     }
-
-    void PhysicsList::PrintPhysicsLists()
-    {
-        // G4cout << "Enabled Physics Lists:" << G4endl;
-        // for(size_t ii = 0; ii < mPhysicsLists.size(); ii++)
-        // {
-        //     G4cout << "\t[" << ii << "]: " << mPhysicsLists[ii] << G4endl;
-        // }
-    }
 }

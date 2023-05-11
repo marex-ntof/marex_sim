@@ -41,11 +41,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4AnalysisManager.hh"
 
-#include "LArNEST.hh"
-#include "LArDetector.hh"
 #include "ThermalElectron.hh"
 #include "EventManager.hh"
-#include "NESTInterface.hh"
 
 namespace marex
 {

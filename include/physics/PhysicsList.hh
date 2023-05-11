@@ -49,6 +49,7 @@
 #include "G4PhysListFactory.hh"
 
 #include "NeutronHPPhysics.hh"
+#include "ThermalElectron.hh"
 
 namespace marex
 {
@@ -60,8 +61,6 @@ namespace marex
 
         virtual void SetCuts();
         virtual void ConstructParticle();
-
-        void PrintPhysicsLists();
 
     private:
         

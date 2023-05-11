@@ -62,8 +62,8 @@ add_definitions(-DMAREX_ROOT)
 # YAML
 message(STATUS "Compiling with yaml-cpp.")
 add_definitions(-DMAREX_YAML)
-set(YAML_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/vendor/yaml-cpp/include)
-add_subdirectory(${PROJECT_SOURCE_DIR}/vendor/yaml-cpp)
+set(YAML_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/yaml-cpp/include)
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib/yaml-cpp)
 set(YAML_LIBS yaml-cpp)
 ##############################################################
 

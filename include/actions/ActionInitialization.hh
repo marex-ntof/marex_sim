@@ -11,6 +11,7 @@
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
+#include "StackingAction.hh"
 #include "SteppingAction.hh"
 #include "TrackingAction.hh"
 #include "Core.hh"

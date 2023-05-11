@@ -26,6 +26,7 @@ namespace marex
         virtual void UserSteppingAction(const G4Step*);
         
     private:
-
+        G4double mOpticalLengths;
+        G4int mOpticalNum;
     };
 }

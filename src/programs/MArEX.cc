@@ -70,18 +70,37 @@ int main(int argc, char** argv)
 #endif
     
     // apply the detector, physics list and initialization
-    RunManager->SetUserInitialization(new marex::DetectorConstruction(Config.GetConfig()));
+    RunManager->SetUserInitialization(
+        new marex::DetectorConstruction(Config.GetConfig())
+    );
     RunManager->SetUserInitialization(new marex::PhysicsList());
-    RunManager->SetUserInitialization(new marex::ActionInitialization(Config.GetConfig()));
+    RunManager->SetUserInitialization(
+        new marex::ActionInitialization(Config.GetConfig())
+    );
     
     // Replaced HP environmental variables with C++ calls                                                                                     
-    G4ParticleHPManager::GetInstance()->SetSkipMissingIsotopes( true );
-    G4ParticleHPManager::GetInstance()->SetDoNotAdjustFinalState( true );
-    // G4ParticleHPManager::GetInstance()->SetUseOnlyPhotoEvaporation( true );
-    // G4ParticleHPManager::GetInstance()->SetNeglectDoppler( true );
-    // G4ParticleHPManager::GetInstance()->SetProduceFissionFragments( true );
-    // G4ParticleHPManager::GetInstance()->SetUseWendtFissionModel( true );
-    // G4ParticleHPManager::GetInstance()->SetUseNRESP71Model( true );
+    G4ParticleHPManager::GetInstance()->SetSkipMissingIsotopes(
+        Config.GetConfig()["neutron"]["skip_missing_isotopes"].as<G4bool>()
+    );
+    G4ParticleHPManager::GetInstance()->SetDoNotAdjustFinalState(
+        Config.GetConfig()["neutron"]["do_not_adjust_final_state"].as<G4bool>()
+    );
+    G4ParticleHPManager::GetInstance()->SetUseOnlyPhotoEvaporation(
+        Config.GetConfig()["neutron"]["use_only_photo_evaporation"].as<G4bool>()
+    );
+    G4ParticleHPManager::GetInstance()->SetNeglectDoppler(
+        Config.GetConfig()["neutron"]["neglect_doppler"].as<G4bool>()
+    );
+    G4ParticleHPManager::GetInstance()->SetProduceFissionFragments(
+        Config.GetConfig()["neutron"]["produce_fission_fragments"].as<G4bool>()
+    );
+    G4ParticleHPManager::GetInstance()->SetUseWendtFissionModel(
+        Config.GetConfig()["neutron"]["use_wendt_fission_model"].as<G4bool>()
+    );
+    G4ParticleHPManager::GetInstance()->SetUseNRESP71Model(
+        Config.GetConfig()["neutron"]["use_nresp71_model"].as<G4bool>()
+    );
+
 
     //marex::EventManager::GetEventManager()->SaveGDML();
     if(Config.GetConfig()["manager"]["mode"].as<std::string>() == "interactive")

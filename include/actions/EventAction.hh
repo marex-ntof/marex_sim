@@ -16,6 +16,7 @@
 
 #include "RunAction.hh"
 #include "EventManager.hh"
+#include "PrimaryGeneratorAction.hh"
 
 namespace marex
 {
@@ -29,6 +30,6 @@ namespace marex
         virtual void EndOfEventAction(const G4Event*);
 
     private:
-
+        std::shared_ptr<RunAction> mRunAction;
     };
 }
