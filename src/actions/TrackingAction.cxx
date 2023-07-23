@@ -3,7 +3,7 @@
  * @author Nicholas Carrara [nmcarrara@ucdavis.edu]
  * @brief 
  * @version 0.1
- * @date 2022-04-27
+ * @date 2022-12-13
  */
 #include "TrackingAction.hh"
 
@@ -23,6 +23,7 @@ namespace marex
         Manager->AddParticleMapsFromTrack(track);
         Manager->AddPrimaryInfoFromTrackBegin(track);
         Manager->AddParticleInfoFromTrackBegin(track);
+        Manager->AddNeutronInfoFromTrackBegin(track);
     }
 
     void TrackingAction::PostUserTrackingAction(const G4Track* track)
@@ -30,8 +31,7 @@ namespace marex
         auto Manager = EventManager::GetEventManager();
         Manager->AddPrimaryInfoFromTrackEnd(track);
         Manager->AddParticleInfoFromTrackEnd(track);
-        Manager->AddOpticalPhotonInfoFromTrackEnd(track);
-        Manager->AddThermalElectronInfoFromTrackEnd(track);
+        Manager->AddNeutronInfoFromTrackEnd(track);
     }
 
 }

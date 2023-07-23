@@ -15,7 +15,7 @@
 #include "Material.hh"
 #include "EventManager.hh"
 
-namespace marex
+namespace Artie
 {
     /// constant values for the mass/mol of Argon isotopes
     static constexpr G4double Ar36MassMol = 35.967*g/mole;

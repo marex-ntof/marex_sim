@@ -3,7 +3,7 @@
  * @author Nicholas Carrara [nmcarrara@ucdavis.edu]
  * @brief 
  * @version 0.1
- * @date 2022-04-27
+ * @date 2022-12-13
  */
 #include "SteppingAction.hh"
 
@@ -25,5 +25,6 @@ namespace marex
         auto Manager = EventManager::GetEventManager();
         Manager->AddParticleInfoFromStep(step);
         Manager->AddEnergyDepositInfoFromStep(step);
+        Manager->AddNeutronInfoFromStep(step);
     }
 }

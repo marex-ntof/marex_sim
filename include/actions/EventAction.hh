@@ -11,14 +11,17 @@
 #include "globals.hh"
 #include "G4UserEventAction.hh"
 #include "G4Event.hh"
+#ifdef ARTIE_GEANT_10
+#include "g4root.hh"
+#else
 #include "G4AnalysisManager.hh"
+#endif
 #include "G4RunManager.hh"
 
 #include "RunAction.hh"
 #include "EventManager.hh"
-#include "PrimaryGeneratorAction.hh"
 
-namespace marex
+namespace Artie
 {
     class EventAction : public G4UserEventAction
     {
@@ -30,6 +33,6 @@ namespace marex
         virtual void EndOfEventAction(const G4Event*);
 
     private:
-        std::shared_ptr<RunAction> mRunAction;
+
     };
 }

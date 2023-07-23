@@ -1,6 +1,7 @@
 /**
  * @file EventManager.cxx
  * @author Nicholas Carrara [nmcarrara@ucdavis.edu]
+ * @author Yashwanth Bezawada [ysbezawada@ucdavis.edu]
  * @brief 
  * @version 0.1
  * @details 
@@ -40,70 +41,176 @@ namespace marex
             if(mConfig["manager"]["output_filename"])   { 
                 sOutputFileName = mConfig["manager"]["output_filename"].as<std::string>(); 
             }
+            if(mConfig["manager"]["save_particle_maps"]) { 
+                sSaveParticleMaps = mConfig["manager"]["save_particle_maps"].as<G4bool>(); 
+            }
+            if(mConfig["manager"]["save_primary_info"]) { 
+                sSavePrimaryInfo = mConfig["manager"]["save_primary_info"].as<G4bool>(); 
+            }
+            if(mConfig["manager"]["save_particle_info"]) { 
+                sSaveParticleInfo = mConfig["manager"]["save_particle_info"].as<G4bool>(); 
+            }
+            if(mConfig["manager"]["save_energy_deposits"]) { 
+                sSaveEnergyDeposits = mConfig["manager"]["save_energy_deposits"].as<G4bool>(); 
+            }
+            if(mConfig["manager"]["save_neutron_data"]) { 
+                sSaveNeutronData = mConfig["manager"]["save_neutron_data"].as<G4bool>(); 
+            }
             if(mConfig["manager"]["save_profile_data"]) { 
                 sSaveProfileData = mConfig["manager"]["save_profile_data"].as<G4bool>(); 
             }
-            if(mConfig["argon"]["use_g4_definition"])   { mUseG4Definition = mConfig["argon"]["use_g4_definition"].as<G4bool>(); }
-            if(mConfig["argon"]["argon_36_ratio"])      { mArgon36Ratio = mConfig["argon"]["argon_36_ratio"].as<G4double>(); }
-            if(mConfig["argon"]["argon_38_ratio"])      { mArgon38Ratio = mConfig["argon"]["argon_38_ratio"].as<G4double>(); }
-            if(mConfig["argon"]["argon_40_ratio"])      { mArgon40Ratio = mConfig["argon"]["argon_40_ratio"].as<G4double>(); }
-            if(mConfig["argon"]["lar_density"])         { mLArDensity = mConfig["argon"]["lar_density"].as<G4double>() * g/cm3; }
-            if(mConfig["argon"]["lar_temperature"])     { mLArTemperature = mConfig["argon"]["lar_temperature"].as<G4double>() * kelvin; }
-            if(mConfig["argon"]["lar_pressure"])        { mLArPressure = mConfig["argon"]["lar_pressure"].as<G4double>() * atmosphere; }
-            if(mConfig["detector"]["detector_entrance"]) { mDetectorEntrance = mConfig["detector"]["detector_entrance"].as<G4double>() * m; }
+            if(mConfig["manager"]["save_non_detected_neutrons"]) { 
+                sSaveNonDetectedNeutrons = mConfig["manager"]["save_non_detected_neutrons"].as<G4bool>(); 
+            }
+            if(mConfig["manager"]["save_hits"]) { 
+                sSaveHits = mConfig["manager"]["save_hits"].as<G4bool>(); 
+            }
+            if(mConfig["manager"]["save_non_detected_neutrons"]) { 
+                sSaveNonDetectedNeutrons = mConfig["manager"]["save_non_detected_neutrons"].as<G4bool>(); 
+            }
+            if(mConfig["argon"]["use_g4_definition"])   { 
+                mUseG4Definition = mConfig["argon"]["use_g4_definition"].as<G4bool>(); 
+            }
+            if(mConfig["argon"]["argon_36_ratio"])      { 
+                mArgon36Ratio = mConfig["argon"]["argon_36_ratio"].as<G4double>(); 
+            }
+            if(mConfig["argon"]["argon_38_ratio"])      { 
+                mArgon38Ratio = mConfig["argon"]["argon_38_ratio"].as<G4double>(); 
+            }
+            if(mConfig["argon"]["argon_40_ratio"])      { 
+                mArgon40Ratio = mConfig["argon"]["argon_40_ratio"].as<G4double>(); 
+            }
+            if(mConfig["argon"]["lar_density"])         { 
+                mLArDensity = mConfig["argon"]["lar_density"].as<G4double>() * g/cm3; 
+            }
+            if(mConfig["argon"]["lar_temperature"])     { 
+                mLArTemperature = mConfig["argon"]["lar_temperature"].as<G4double>() * kelvin; 
+            }
+            if(mConfig["argon"]["lar_pressure"])        { 
+                mLArPressure = mConfig["argon"]["lar_pressure"].as<G4double>() * atmosphere; 
+            }
+            if(mConfig["detector"]["detector_entrance"]) { 
+                mDetectorEntrance = mConfig["detector"]["detector_entrance"].as<G4double>() * m; 
+            }
         }
+        if(mConfig["analysis"])
+        {
+            if(mConfig["analysis"]["N_x"]) { 
+                mN_x = mConfig["analysis"]["N_x"].as<G4int>(); 
+            }
+            if(mConfig["analysis"]["N_y"]) { 
+                mN_y = mConfig["analysis"]["N_y"].as<G4int>(); 
+            }
+            if(mConfig["analysis"]["N_z"]) { 
+                mN_z = mConfig["analysis"]["N_z"].as<G4int>(); 
+            }
+            if(mConfig["analysis"]["background_neutrons"]) { 
+                mNumBkgdEvents = mConfig["analysis"]["background_neutrons"].as<G4int>(); 
+            }
+            if(mConfig["analysis"]["distribution_type"]) { 
+                mBkgdDistType = mConfig["analysis"]["distribution_type"].as<std::string>(); 
+            }
+        }
+        if(mConfig["hall"]["world_x"]) { mHallX = mConfig["hall"]["world_x"].as<G4double>() * m; }
+        if(mConfig["hall"]["world_y"]) { mHallY = mConfig["hall"]["world_y"].as<G4double>() * m; }
+        if(mConfig["hall"]["world_z"]) { mHallZ = mConfig["hall"]["world_z"].as<G4double>() * m; }
 
-        if(mConfig["generator"]["energy_cut_low"])  { mEnergyCutLow = mConfig["generator"]["energy_cut_low"].as<G4double>() * keV; }
-        if(mConfig["generator"]["energy_cut_high"]) { mEnergyCutHigh = mConfig["generator"]["energy_cut_high"].as<G4double>() * keV; }
+        if(mConfig["detector"]["detector_length"])      { mDetLen = mConfig["detector"]["detector_length"].as<G4double>() * cm; }
+        if(mConfig["detector"]["detector_entrance"])    { mDetEntrance = mConfig["detector"]["detector_entrance"].as<G4double>() * m; }
+
+        // mAnalysisRunBeginFunctions.emplace_back(AnalysisFunctionRunBegin);
+        // mAnalysisRunEndFunctions.emplace_back(AnalysisFunctionRunEnd);
+        // mAnalysisEventBeginFunctions.emplace_back(AnalysisFunctionEventBegin);
+        // mAnalysisEventEndFunctions.emplace_back(AnalysisFunctionEventEnd);
+
+        mAnalysisRunBeginFunctions.emplace_back(bkgdAnalysisFunctionRunBegin);
+        mAnalysisRunEndFunctions.emplace_back(bkgdAnalysisFunctionRunEnd);
+        mAnalysisEventBeginFunctions.emplace_back(bkgdAnalysisFunctionEventBegin);
+        mAnalysisEventEndFunctions.emplace_back(bkgdAnalysisFunctionEventEnd);
+        
+        if(mConfig["generator"]["energy_cut_low"])  { 
+            mEnergyCutLow = mConfig["generator"]["energy_cut_low"].as<G4double>() * keV; 
+        }
+        if(mConfig["generator"]["energy_cut_high"]) { 
+            mEnergyCutHigh = mConfig["generator"]["energy_cut_high"].as<G4double>() * keV; 
+        }
+        if(mConfig["generator"]["t_zero_location"]) { 
+            mTZeroLocation = mConfig["generator"]["t_zero_location"].as<G4double>() * m; 
+        }
 
         // Set up energy distributions
-        mnTOFBeamProfileFileName = mConfig["generator"]["beam_profile"]["profile_file"].as<std::string>();
-        mnTOFBeamProfileName = mConfig["generator"]["beam_profile"]["profile_name"].as<std::string>();
-        mnTOFBeamProfileFile = new TFile(mnTOFBeamProfileFileName);
-        mnTOFBeamProfile.reset((TH2D*)mnTOFBeamProfileFile->Get(mnTOFBeamProfileName));
-
-        mnTOFTOFFileName = mConfig["generator"]["time_of_flight"]["tof_file"].as<std::string>();
-        mnTOFTOFFile = new TFile(mnTOFTOFFileName);
-        // Set up tof profile and projections
-        mnTOFTOF.reset((TH2D*)mnTOFTOFFile->Get(mnTOFTOFName));
-        
-        auto beam_x = mnTOFTOF->GetXaxis();
-        auto num_bins = beam_x->GetNbins();
-        for(G4int ii = 0; ii < num_bins; ii++)
+        std::string distribution_type = mConfig["generator"]["energy_distribution"]["distribution_type"].as<std::string>();
+        if(distribution_type == "ntof")
         {
-            std::string projection_name = "profile_" + std::to_string(ii);
-            TH1D* projection = (TH1D*)mnTOFTOF->ProjectionY(
-                projection_name.c_str(),
-                ii, ii+1
+            mnTOFTOFDistributionFileName = mConfig["generator"]["energy_distribution"]["distribution_file"].as<std::string>();
+            G4cout << mnTOFTOFDistributionFileName << G4endl;
+            mnTOFTOFDistributionName = mConfig["generator"]["energy_distribution"]["distribution_name"].as<std::string>();
+            mnTOFTOFDistributionFile = new TFile(mnTOFTOFDistributionFileName);
+
+            // Getting histogram from the canvas
+            TCanvas *c1 = (TCanvas*)mnTOFTOFDistributionFile->Get("Canvas_1");
+            TH1D* h1 = (TH1D*)c1->GetPrimitive(mnTOFTOFDistributionName);
+
+            G4double tofLow = GetNominalTOF(mEnergyCutHigh);
+            G4double tofHigh = GetNominalTOF(mEnergyCutLow);
+
+            G4int binLow = h1->GetXaxis()->FindBin(tofLow);
+            G4int binHigh = h1->GetXaxis()->FindBin(tofHigh);
+            G4int numBins = binHigh - binLow + 1;
+
+            mnTOFTOFDistribution.reset(
+                new TH1D("h2", "TOF hist in the energy range", numBins, tofLow, tofHigh)
             );
-            mnTOFTOFProjections.emplace_back(projection);
+
+            // Filling the TOF histogram
+            for (G4int i = 1; i < numBins + 1; i++)
+            {
+                mnTOFTOFDistribution->SetBinContent(i, h1->GetBinContent(binLow + i - 1));
+            }
+        }
+        
+        std::string profile_type = mConfig["generator"]["beam_profile"]["profile_type"].as<std::string>();
+        if(profile_type == "ntof") 
+        {
+            mnTOFBeamProfileFileName = mConfig["generator"]["beam_profile"]["profile_file"].as<std::string>();
+            mnTOFBeamProfileName = mConfig["generator"]["beam_profile"]["profile_name"].as<std::string>();
+            mnTOFBeamProfileFile = new TFile(mnTOFBeamProfileFileName);
+            mnTOFBeamProfile.reset((TH2D*)mnTOFBeamProfileFile->Get(mnTOFBeamProfileName));
         }
 
+        std::string tof_type = mConfig["generator"]["time_of_flight"]["tof_type"].as<std::string>();
+        if(tof_type == "ntof") 
+        {
+            mnTOFTOFFileName = mConfig["generator"]["time_of_flight"]["tof_file"].as<std::string>();
+            mnTOFTOFFile = new TFile(mnTOFTOFFileName);
+            // Set up tof profile and projections
+            mnTOFTOF.reset((TH2D*)mnTOFTOFFile->Get(mnTOFTOFName));
+            
+            auto beam_x = mnTOFTOF->GetXaxis();
+            auto num_bins = beam_x->GetNbins();
+            for(G4int ii = 0; ii < num_bins; ii++)
+            {
+                std::string projection_name = "profile_" + std::to_string(ii);
+                TH1D* projection = (TH1D*)mnTOFTOF->ProjectionY(
+                    projection_name.c_str(),
+                    ii, ii+1
+                );
+                mnTOFTOFProjections.emplace_back(projection);
+            }
+        }
         G4GDMLParser* mGDMLParser;
     }
 
-    void EventManager::SetPhysicsList(PhysicsList* physicsList)
+    void EventManager::SaveGDML()
     {
-        sPhysicsList.reset(physicsList);
-    }
-
-    std::vector<PrimaryGeneration> EventManager::GeneratePrimaryList()
-    {
-        StartFunctionProfile();
-        std::vector<PrimaryGeneration> primaries;
-        primaries.emplace_back(
-            PrimaryGeneration(
-                "Am241",
-                95, 241,
-                0.0 * eplus,
-                0.,
-                {0., 0., 0.},
-                0.0 * keV,
-                {0., 0., 1.}
-            )
+        G4GDMLParser* mGDMLParser;
+        mGDMLParser->SetRegionExport(true);
+        mGDMLParser->SetOutputFileOverwrite(true);
+        mGDMLParser->Write(
+            "gdml/" + OutputFileName() + ".gdml", 
+            G4TransportationManager::GetTransportationManager()
+            ->GetNavigatorForTracking()->GetWorldVolume()->GetLogicalVolume()
         );
-        EndFunctionProfile("GeneratePrimaryList");
-        return primaries;
     }
 
     G4int EventManager::GetIndex(G4String tuple)
@@ -121,8 +228,9 @@ namespace marex
 
     void EventManager::OpenOutputFile(G4int RunID)
     {
+        std::filesystem::create_directory("outputs");
         auto AnalysisManager = G4AnalysisManager::Instance();
-        G4String OutputFile = OutputFileName() + "_" + std::to_string(RunID) + ".root";
+        G4String OutputFile = "outputs/" + OutputFileName() + "_" + std::to_string(RunID) + ".root";
         G4bool fileopen = AnalysisManager->OpenFile(OutputFile);
         if (!fileopen) {
             G4cout << "File - " + OutputFile 
@@ -133,13 +241,20 @@ namespace marex
                 << " - opened successfully." << G4endl;
         }
     }
+
+    void EventManager::ConstructEnergyDistribution()
+    {
+#ifdef MAREX_ROOT
+#endif
+    }
+
     void EventManager::CloseOutputFile(G4int RunID)
     {
         auto AnalysisManager = G4AnalysisManager::Instance();
         AnalysisManager->Write();
         AnalysisManager->CloseFile();
 
-#ifdef LARGEANT_PROFILING
+#ifdef MAREX_PROFILING
         std::ofstream ProfilingFile;
         std::filesystem::create_directory(".logs");
         auto ThreadID = G4Threading::G4GetThreadId();
@@ -167,10 +282,22 @@ namespace marex
     {
         StartFunctionProfile();
         auto AnalysisManager = G4AnalysisManager::Instance();
+#ifdef MAREX_GEANT_10
+#else
         AnalysisManager->SetDefaultFileType("root");
+#endif
         AnalysisManager->SetVerboseLevel(0);
         AnalysisManager->SetNtupleMerging(true);
 
+#ifdef MAREX_YAML
+        G4int index = GetIndex("Configuration");
+        AnalysisManager->CreateNtuple("Configuration", "Configuration");
+        AnalysisManager->CreateNtupleSColumn("category");
+        AnalysisManager->CreateNtupleSColumn("parameter");
+        AnalysisManager->CreateNtupleSColumn("value");
+        AnalysisManager->FinishNtuple(index);
+        mSavedParameters = false;
+#endif
         if(SaveParticleMaps())
         {
             G4int index = GetIndex("ParticleMaps");
@@ -181,8 +308,6 @@ namespace marex
             AnalysisManager->CreateNtupleIColumn("pdg");
             AnalysisManager->CreateNtupleIColumn("parent_track_id");
             AnalysisManager->CreateNtupleIColumn("ancestor_track_id");
-            AnalysisManager->CreateNtupleIColumn("scintillation_ancestor_track_id");
-            AnalysisManager->CreateNtupleIColumn("scintillation_ancestor_pdg");
             AnalysisManager->FinishNtuple(index);
         }
         if(SavePrimaryInfo())
@@ -209,14 +334,6 @@ namespace marex
             AnalysisManager->CreateNtupleDColumn("total_daughter_edep");
             AnalysisManager->CreateNtupleIColumn("number_of_edeps");
             AnalysisManager->CreateNtupleDColumn("total_edep");
-            AnalysisManager->CreateNtupleIColumn("number_of_photons");
-            AnalysisManager->CreateNtupleDColumn("total_optical_photon_init_energy");
-            AnalysisManager->CreateNtupleDColumn("total_optical_photon_final_energy");
-            AnalysisManager->CreateNtupleDColumn("total_optical_photon_edep");
-            AnalysisManager->CreateNtupleIColumn("number_of_electrons");
-            AnalysisManager->CreateNtupleDColumn("total_thermal_electron_init_energy");
-            AnalysisManager->CreateNtupleDColumn("total_thermal_electron_final_energy");
-            AnalysisManager->CreateNtupleDColumn("total_thermal_electron_edep");
             AnalysisManager->CreateNtupleIColumn("number_of_hits");
             AnalysisManager->FinishNtuple(index);
         }
@@ -246,6 +363,7 @@ namespace marex
             AnalysisManager->CreateNtuple("EnergyDeposits", "EnergyDeposits");
             AnalysisManager->CreateNtupleIColumn("event");
             AnalysisManager->CreateNtupleIColumn("track_id");
+            AnalysisManager->CreateNtupleSColumn("volume");
             AnalysisManager->CreateNtupleSColumn("particle");
             AnalysisManager->CreateNtupleIColumn("pdg");
             AnalysisManager->CreateNtupleDColumn("local_time");
@@ -257,27 +375,6 @@ namespace marex
             AnalysisManager->CreateNtupleDColumn("final_y");
             AnalysisManager->CreateNtupleDColumn("final_z");
             AnalysisManager->CreateNtupleDColumn("edep");
-            AnalysisManager->FinishNtuple(index);
-        }
-        if(SaveOpticalPhotons())
-        {
-            G4int index = GetIndex("OpticalPhotons");
-            AnalysisManager->CreateNtuple("OpticalPhotons", "OpticalPhotons");
-            AnalysisManager->CreateNtupleIColumn("event");
-            AnalysisManager->CreateNtupleIColumn("track_id");
-            AnalysisManager->CreateNtupleIColumn("parent_track_id");
-            AnalysisManager->CreateNtupleIColumn("parent_pdg");
-            AnalysisManager->CreateNtupleDColumn("energy");
-            AnalysisManager->CreateNtupleDColumn("track_length");
-            AnalysisManager->FinishNtuple(index);
-        }
-        if(SaveThermalElectrons())
-        {
-            G4int index = GetIndex("ThermalElectrons");
-            AnalysisManager->CreateNtuple("ThermalElectrons", "ThermalElectrons");
-            AnalysisManager->CreateNtupleIColumn("event");
-            AnalysisManager->CreateNtupleDColumn("energy");
-            AnalysisManager->CreateNtupleDColumn("track_length");
             AnalysisManager->FinishNtuple(index);
         }
         if(SaveHits())
@@ -298,7 +395,71 @@ namespace marex
             AnalysisManager->CreateNtupleDColumn("pz_particle");
             AnalysisManager->CreateNtupleDColumn("energy");
             AnalysisManager->CreateNtupleIColumn("detected");
-            AnalysisManager->CreateNtupleIColumn("scintillation_ancestor_pdg");
+            AnalysisManager->FinishNtuple(index);
+        }
+        if(SaveNeutronData())
+        {
+            G4int index = GetIndex("NeutronRunData");
+            AnalysisManager->CreateNtuple("NeutronRunData", "NeutronRunData");
+            AnalysisManager->CreateNtupleIColumn("num_events");
+            AnalysisManager->CreateNtupleIColumn("num_detected");
+            AnalysisManager->CreateNtupleIColumn("num_elastic");
+            AnalysisManager->CreateNtupleIColumn("num_inelastic");
+            AnalysisManager->CreateNtupleIColumn("num_capture");
+            AnalysisManager->CreateNtupleIColumn("num_fission");
+            AnalysisManager->CreateNtupleIColumn("num_scatter");
+            AnalysisManager->CreateNtupleIColumn("num_scatter_out");
+            AnalysisManager->CreateNtupleIColumn("num_scatter_detector");
+            AnalysisManager->FinishNtuple(index);
+        }
+        if(SaveNeutronData())
+        {
+            G4int index = GetIndex("NeutronEventData");
+            AnalysisManager->CreateNtuple("NeutronEventData", "NeutronEventData");
+            AnalysisManager->CreateNtupleIColumn("event");
+            AnalysisManager->CreateNtupleIColumn("track_id");
+            AnalysisManager->CreateNtupleDColumn("neutron_energy");
+            AnalysisManager->CreateNtupleDColumn("nominal_tof");
+            AnalysisManager->CreateNtupleDColumn("start_time");
+            AnalysisManager->CreateNtupleDColumn("start_x");
+            AnalysisManager->CreateNtupleDColumn("start_y");
+            AnalysisManager->CreateNtupleDColumn("start_z");
+            AnalysisManager->CreateNtupleIColumn("detector");
+            AnalysisManager->CreateNtupleDColumn("arrival_time");
+            AnalysisManager->CreateNtupleDColumn("arrival_energy");
+            AnalysisManager->CreateNtupleIColumn("num_elastic");
+            AnalysisManager->CreateNtupleIColumn("num_inelastic");
+            AnalysisManager->CreateNtupleIColumn("num_capture");
+            AnalysisManager->CreateNtupleIColumn("num_fission");
+            AnalysisManager->CreateNtupleIColumn("num_scatter");
+            AnalysisManager->CreateNtupleIColumn("num_scatter_out");
+            AnalysisManager->CreateNtupleIColumn("gas_first");
+            AnalysisManager->CreateNtupleDColumn("first_scatter_x");
+            AnalysisManager->CreateNtupleDColumn("first_scatter_y");
+            AnalysisManager->CreateNtupleDColumn("first_scatter_z");
+            AnalysisManager->CreateNtupleDColumn("first_scatter_t");
+            AnalysisManager->CreateNtupleDColumn("second_scatter_x");
+            AnalysisManager->CreateNtupleDColumn("second_scatter_y");
+            AnalysisManager->CreateNtupleDColumn("second_scatter_z");
+            AnalysisManager->CreateNtupleDColumn("second_scatter_t");
+            AnalysisManager->CreateNtupleDColumn("max_dphi");
+            AnalysisManager->CreateNtupleDColumn("max_dp");
+            AnalysisManager->CreateNtupleDColumn("max_dE");
+            AnalysisManager->CreateNtupleIColumn("safe_passage");
+            AnalysisManager->CreateNtupleDColumn("first_target_step_time");
+            AnalysisManager->CreateNtupleDColumn("first_target_step_energy");
+            AnalysisManager->CreateNtupleDColumn("first_target_step_z");
+            AnalysisManager->FinishNtuple(index);
+        }
+        if(SaveProfileData())
+        {
+            G4int index = GetIndex("ProfileEventData");
+            AnalysisManager->CreateNtuple("ProfileEventData", "ProfileEventData");
+            AnalysisManager->CreateNtupleSColumn("name");
+            AnalysisManager->CreateNtupleSColumn("volume");
+            AnalysisManager->CreateNtupleIColumn("exit");
+            AnalysisManager->CreateNtupleDColumn("x");
+            AnalysisManager->CreateNtupleDColumn("y");
             AnalysisManager->FinishNtuple(index);
         }
         EndFunctionProfile("CreateTuples");
@@ -306,10 +467,11 @@ namespace marex
 
     void EventManager::FillParticleMaps(G4int EventID)
     {
-        StartFunctionProfile();
         if(!SaveParticleMaps()) {
             return;
         }
+        StartFunctionProfile();
+
         auto AnalysisManager = G4AnalysisManager::Instance();
         G4int index = GetIndex("ParticleMaps");
         for(auto const& [key, val] : mParticleName)
@@ -320,18 +482,17 @@ namespace marex
             AnalysisManager->FillNtupleIColumn(index, 3, GetParticlePDG(key));
             AnalysisManager->FillNtupleIColumn(index, 4, GetParticleParentTrackID(key));
             AnalysisManager->FillNtupleIColumn(index, 5, GetParticleAncestorTrackID(key));
-            AnalysisManager->FillNtupleIColumn(index, 6, GetScintillationAncestorTrackID(key));
-            AnalysisManager->FillNtupleIColumn(index, 7, GetScintillationAncestorPDG(key));
             AnalysisManager->AddNtupleRow(index);
         }
         EndFunctionProfile("FillParticleMaps");
     }
     void EventManager::FillPrimaryInfo(G4int EventID)
     {
-        StartFunctionProfile();
         if(!SavePrimaryInfo()) {
             return;
         }
+        StartFunctionProfile();
+
         auto AnalysisManager = G4AnalysisManager::Instance();
         G4int index = GetIndex("Primaries");
         for(size_t ii = 0; ii < mPrimaryData.size(); ii++)
@@ -356,15 +517,7 @@ namespace marex
             AnalysisManager->FillNtupleDColumn(index, 17, mPrimaryData[ii].total_daughter_edep);
             AnalysisManager->FillNtupleIColumn(index, 18, mPrimaryData[ii].number_of_edeps);
             AnalysisManager->FillNtupleDColumn(index, 19, mPrimaryData[ii].total_edep);
-            // AnalysisManager->FillNtupleIColumn(index, 20, mPrimaryData[ii].number_of_photons);
-            // AnalysisManager->FillNtupleDColumn(index, 21, mPrimaryData[ii].total_optical_photon_init_energy);
-            // AnalysisManager->FillNtupleDColumn(index, 22, mPrimaryData[ii].total_optical_photon_final_energy);
-            // AnalysisManager->FillNtupleDColumn(index, 23, mPrimaryData[ii].total_optical_photon_edep);
-            // AnalysisManager->FillNtupleIColumn(index, 24, mPrimaryData[ii].number_of_electrons);
-            // AnalysisManager->FillNtupleDColumn(index, 25, mPrimaryData[ii].total_thermal_electron_init_energy);
-            // AnalysisManager->FillNtupleDColumn(index, 26, mPrimaryData[ii].total_thermal_electron_final_energy);
-            // AnalysisManager->FillNtupleDColumn(index, 27, mPrimaryData[ii].total_thermal_electron_edep);
-            // AnalysisManager->FillNtupleIColumn(index, 28, mPrimaryData[ii].number_of_hits);
+            AnalysisManager->FillNtupleIColumn(index, 20, mPrimaryData[ii].number_of_hits);
             AnalysisManager->AddNtupleRow(index);
         }
         EndFunctionProfile("FillPrimaryInfo");
@@ -409,48 +562,29 @@ namespace marex
         {
             AnalysisManager->FillNtupleIColumn(index, 0, EventID);
             AnalysisManager->FillNtupleIColumn(index, 1, mEnergyDeposits[ii].track_id);
-            AnalysisManager->FillNtupleSColumn(index, 2, mEnergyDeposits[ii].name);
-            AnalysisManager->FillNtupleIColumn(index, 3, mEnergyDeposits[ii].pdg);
-            AnalysisManager->FillNtupleDColumn(index, 4, mEnergyDeposits[ii].local_time);
-            AnalysisManager->FillNtupleDColumn(index, 5, mEnergyDeposits[ii].global_time);
-            AnalysisManager->FillNtupleDColumn(index, 6, mEnergyDeposits[ii].pre_step_position[0]);
-            AnalysisManager->FillNtupleDColumn(index, 7, mEnergyDeposits[ii].pre_step_position[1]);
-            AnalysisManager->FillNtupleDColumn(index, 8, mEnergyDeposits[ii].pre_step_position[2]);
-            AnalysisManager->FillNtupleDColumn(index, 9, mEnergyDeposits[ii].post_step_position[0]);
-            AnalysisManager->FillNtupleDColumn(index, 10, mEnergyDeposits[ii].post_step_position[1]);
-            AnalysisManager->FillNtupleDColumn(index, 11, mEnergyDeposits[ii].post_step_position[2]);
-            AnalysisManager->FillNtupleDColumn(index, 12, mEnergyDeposits[ii].energy);
+            AnalysisManager->FillNtupleSColumn(index, 2, mEnergyDeposits[ii].volume);
+            AnalysisManager->FillNtupleSColumn(index, 3, mEnergyDeposits[ii].name);
+            AnalysisManager->FillNtupleIColumn(index, 4, mEnergyDeposits[ii].pdg);
+            AnalysisManager->FillNtupleDColumn(index, 5, mEnergyDeposits[ii].local_time);
+            AnalysisManager->FillNtupleDColumn(index, 6, mEnergyDeposits[ii].global_time);
+            AnalysisManager->FillNtupleDColumn(index, 7, mEnergyDeposits[ii].pre_step_position[0]);
+            AnalysisManager->FillNtupleDColumn(index, 8, mEnergyDeposits[ii].pre_step_position[1]);
+            AnalysisManager->FillNtupleDColumn(index, 9, mEnergyDeposits[ii].pre_step_position[2]);
+            AnalysisManager->FillNtupleDColumn(index, 10, mEnergyDeposits[ii].post_step_position[0]);
+            AnalysisManager->FillNtupleDColumn(index, 11, mEnergyDeposits[ii].post_step_position[1]);
+            AnalysisManager->FillNtupleDColumn(index, 12, mEnergyDeposits[ii].post_step_position[2]);
+            AnalysisManager->FillNtupleDColumn(index, 13, mEnergyDeposits[ii].energy);
             AnalysisManager->AddNtupleRow(index);
         }
         EndFunctionProfile("FillEnergyDeposits");
     }
-    void EventManager::FillOpticalPhotons(G4int EventID)
-    {
-        StartFunctionProfile();
-        if(!SaveOpticalPhotons()) {
-            return;
-        }
-        auto AnalysisManager = G4AnalysisManager::Instance();
-        G4int index = GetIndex("OpticalPhotons");
-        for(size_t ii = 0; ii < mOpticalPhotonData.size(); ii++)
-        {
-            AnalysisManager->FillNtupleIColumn(index, 0, EventID);
-            AnalysisManager->FillNtupleIColumn(index, 1, mOpticalPhotonData[ii].track_id);
-            AnalysisManager->FillNtupleIColumn(index, 2, mOpticalPhotonData[ii].parent_track_id);
-            AnalysisManager->FillNtupleIColumn(index, 3, mOpticalPhotonData[ii].parent_pdg);
-            AnalysisManager->FillNtupleDColumn(index, 4, mOpticalPhotonData[ii].total_energy);
-            AnalysisManager->FillNtupleDColumn(index, 5, mOpticalPhotonData[ii].track_length);
-            AnalysisManager->AddNtupleRow(index);
-        }
-        EndFunctionProfile("FillOpticalPhotons");
-    }
-
     void EventManager::FillHits(G4int EventID)
     {
-        StartFunctionProfile();
         if (!SaveHits()) {
             return;
         }
+        StartFunctionProfile();
+
         auto AnalysisManager = G4AnalysisManager::Instance();
         G4int index = GetIndex("Hits");
         for(size_t ii = 0; ii < mHits.size(); ii++)
@@ -469,12 +603,83 @@ namespace marex
             AnalysisManager->FillNtupleDColumn(index, 11,mHits[ii].particle_momentum[2]);
             AnalysisManager->FillNtupleDColumn(index, 12,mHits[ii].energy);
             AnalysisManager->FillNtupleIColumn(index, 13,mHits[ii].detected);
-            // AnalysisManager->FillNtupleIColumn(index, 14,mHits[ii].scintillation_ancestor_pdg);
             AnalysisManager->AddNtupleRow(index);
         }
         EndFunctionProfile("FillHits");
     }
 
+    void EventManager::FillNeutronEventData(G4int EventID)
+    {
+        if (!SaveNeutronData()) {
+            return;
+        }
+        StartFunctionProfile();
+
+        auto AnalysisManager = G4AnalysisManager::Instance();
+        G4int index = GetIndex("NeutronEventData");
+        for(size_t ii = 0; ii < mNeutronEventData.size(); ii++)
+        {
+            AnalysisManager->FillNtupleIColumn(index, 0, mNeutronEventData[ii].event);
+            AnalysisManager->FillNtupleIColumn(index, 1, mNeutronEventData[ii].track_id);
+            AnalysisManager->FillNtupleDColumn(index, 2, mNeutronEventData[ii].neutron_energy);
+            AnalysisManager->FillNtupleDColumn(index, 3, mNeutronEventData[ii].nominal_tof);
+            AnalysisManager->FillNtupleDColumn(index, 4, mNeutronEventData[ii].start_time);
+            AnalysisManager->FillNtupleDColumn(index, 5, mNeutronEventData[ii].start_x);
+            AnalysisManager->FillNtupleDColumn(index, 6, mNeutronEventData[ii].start_y);
+            AnalysisManager->FillNtupleDColumn(index, 7, mNeutronEventData[ii].start_z);
+            AnalysisManager->FillNtupleIColumn(index, 8, mNeutronEventData[ii].detector);
+            AnalysisManager->FillNtupleDColumn(index, 9, mNeutronEventData[ii].arrival_time);
+            AnalysisManager->FillNtupleDColumn(index, 10, mNeutronEventData[ii].arrival_energy);
+            AnalysisManager->FillNtupleIColumn(index, 11, mNeutronEventData[ii].num_elastic);
+            AnalysisManager->FillNtupleIColumn(index, 12, mNeutronEventData[ii].num_inelastic);
+            AnalysisManager->FillNtupleIColumn(index, 13, mNeutronEventData[ii].num_capture);
+            AnalysisManager->FillNtupleIColumn(index, 14, mNeutronEventData[ii].num_fission);
+            AnalysisManager->FillNtupleIColumn(index, 15, mNeutronEventData[ii].num_scatter);
+            AnalysisManager->FillNtupleIColumn(index, 16, mNeutronEventData[ii].num_scatter_out);
+            AnalysisManager->FillNtupleIColumn(index, 17, mNeutronEventData[ii].gas_first);
+            AnalysisManager->FillNtupleDColumn(index, 18, mNeutronEventData[ii].first_scatter_x);
+            AnalysisManager->FillNtupleDColumn(index, 19, mNeutronEventData[ii].first_scatter_y);
+            AnalysisManager->FillNtupleDColumn(index, 20, mNeutronEventData[ii].first_scatter_z);
+            AnalysisManager->FillNtupleDColumn(index, 21, mNeutronEventData[ii].first_scatter_t);
+            AnalysisManager->FillNtupleDColumn(index, 22, mNeutronEventData[ii].second_scatter_x);
+            AnalysisManager->FillNtupleDColumn(index, 23, mNeutronEventData[ii].second_scatter_y);
+            AnalysisManager->FillNtupleDColumn(index, 24, mNeutronEventData[ii].second_scatter_z);
+            AnalysisManager->FillNtupleDColumn(index, 25, mNeutronEventData[ii].second_scatter_t);
+            AnalysisManager->FillNtupleDColumn(index, 26, mNeutronEventData[ii].max_dphi);
+            AnalysisManager->FillNtupleDColumn(index, 27, mNeutronEventData[ii].max_dp);
+            AnalysisManager->FillNtupleDColumn(index, 28, mNeutronEventData[ii].max_dE);
+            AnalysisManager->FillNtupleIColumn(index, 29, mNeutronEventData[ii].safe_passage);
+            AnalysisManager->FillNtupleDColumn(index, 30, mNeutronEventData[ii].first_target_step_time);
+            AnalysisManager->FillNtupleDColumn(index, 31, mNeutronEventData[ii].first_target_step_energy);
+            AnalysisManager->FillNtupleDColumn(index, 32, mNeutronEventData[ii].first_target_step_z);
+            AnalysisManager->AddNtupleRow(index);
+        }
+
+        EndFunctionProfile("FillNeutronEventData");
+    }
+
+    void EventManager::FillNeutronRunData()
+    {
+        if (!SaveNeutronData()) {
+            return;
+        }
+        StartFunctionProfile();
+
+        auto AnalysisManager = G4AnalysisManager::Instance();
+        G4int index = GetIndex("NeutronRunData");
+        AnalysisManager->FillNtupleIColumn(index, 0, sNeutronRunData.num_events);
+        AnalysisManager->FillNtupleIColumn(index, 1, sNeutronRunData.num_detected);
+        AnalysisManager->FillNtupleIColumn(index, 2, sNeutronRunData.num_elastic);
+        AnalysisManager->FillNtupleIColumn(index, 3, sNeutronRunData.num_inelastic);
+        AnalysisManager->FillNtupleIColumn(index, 4, sNeutronRunData.num_capture);
+        AnalysisManager->FillNtupleIColumn(index, 5, sNeutronRunData.num_fission);
+        AnalysisManager->FillNtupleIColumn(index, 6, sNeutronRunData.num_scatter);
+        AnalysisManager->FillNtupleIColumn(index, 7, sNeutronRunData.num_scatter_out);
+        AnalysisManager->FillNtupleIColumn(index, 8, sNeutronRunData.num_scatter_detector);
+        AnalysisManager->AddNtupleRow(index);
+
+        EndFunctionProfile("FillNeutronRunData");
+    }
 
     void EventManager::AddParticleMapsFromTrack(const G4Track* track)
     {
@@ -506,17 +711,6 @@ namespace marex
             AddParticleAncestorTrackID(track_id, GetParticleAncestorTrackID(parent_track_id));
         }
 
-        // Add scintillation information
-        if(process == "ScintillationProcess")
-        {
-            AddScintillationAncestorTrackID(track_id, parent_track_id);
-            AddScintillationAncestorPDG(track_id, GetParticlePDG(parent_track_id));
-        }
-        else
-        {
-            AddScintillationAncestorTrackID(track_id, -1);
-            AddScintillationAncestorPDG(track_id, -1);
-        }
         EndFunctionProfile("AddParticleMapsFromTrack");
     }
 
@@ -527,10 +721,8 @@ namespace marex
         G4int particle_pdg = track->GetParticleDefinition()->GetPDGEncoding();
         G4ThreeVector particle_position = track->GetVertexPosition();
 
-        G4double local_time = track->GetLocalTime();
         G4double global_time = track->GetGlobalTime();
         G4double kinetic_energy = track->GetKineticEnergy();
-        G4int track_status = (int)track->GetTrackStatus();
         G4int track_id = track->GetTrackID();
         G4int parent_track_id = track->GetParentID();
 
@@ -552,21 +744,8 @@ namespace marex
         }
         else
         {
-            // if(particle_name == "opticalphoton")
-            // {
-            //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).number_of_photons += 1;
-            //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_optical_photon_init_energy += kinetic_energy;
-            // }
-            // else if(particle_name == "thermalelectron")
-            // {
-            //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).number_of_electrons += 1;
-            //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_thermal_electron_init_energy += kinetic_energy;
-            // }
-            // else
-            // {
-            //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_daughter_init_energy += kinetic_energy;
-            //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).number_of_daughters += 1;
-            // }
+            GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_daughter_init_energy += kinetic_energy;
+            GetPrimaryData(GetParticleAncestorTrackID(track_id)).number_of_daughters += 1;
         }
         EndFunctionProfile("AddPrimaryInfoFromTrackBegin");
     }
@@ -587,18 +766,11 @@ namespace marex
                 particle_position[2], kinetic_energy
             );
         }
-        // else if(particle_name == "opticalphoton") {
-        //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_optical_photon_final_energy += kinetic_energy;
-        // }
-        // else if (particle_name == "thermalelectron") {
-        //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_thermal_electron_final_energy += kinetic_energy;
-        // }
-        // else {
-        //     GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_daughter_final_energy += kinetic_energy;
-        // }
+        else {
+            GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_daughter_final_energy += kinetic_energy;
+        }
         EndFunctionProfile("AddPrimaryInfoFromTrackEnd");
     }
-
     void EventManager::AddParticleInfoFromTrackBegin(const G4Track* track)
     {
         StartFunctionProfile();
@@ -635,6 +807,16 @@ namespace marex
     void EventManager::AddParticleInfoFromTrackEnd(const G4Track* track)
     {
         StartFunctionProfile();
+        // G4int           track_id = track->GetTrackID();
+        // G4double        local_time = track->GetLocalTime();
+        // G4ThreeVector   end_position = track->GetStep()->GetPostStepPoint()->GetPosition(); //track->GetPosition();
+        // G4ThreeVector   end_momentum = track->GetMomentum();
+        // G4double        kinetic_energy = track->GetKineticEnergy();
+
+        // mParticles[GetParticleTrackID(track_id)].AddTrajectoryPoint(
+        //     local_time, end_position, kinetic_energy, end_momentum
+        // );
+
         EndFunctionProfile("AddParticleInfoFromTrackEnd");
     }
     void EventManager::AddParticleInfoFromStep(const G4Step *step)
@@ -672,22 +854,23 @@ namespace marex
                 GetPrimaryData(track_id).number_of_edeps += 1;
                 GetPrimaryData(track_id).total_edep += edep;
             }
-            else if(particle_name == "opticalphoton") {
-                GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_optical_photon_edep += edep;
-            }
-            else if(particle_name == "thermalelectron") {
-                GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_thermal_electron_edep += edep;
-            }
             else {
                 GetPrimaryData(GetParticleAncestorTrackID(track_id)).total_daughter_edep += edep;
             }
-        }
-        else
+        }    
+
+        mParticles[GetParticleTrackID(track_id)].AddTrajectoryPoint(
+            local_time, pre_step_position, kinetic_energy, pre_step_momentum
+        );
+
+        G4StepStatus post_step_status = post_step_point->GetStepStatus();
+        if (post_step_status == fWorldBoundary)
         {
             mParticles[GetParticleTrackID(track_id)].AddTrajectoryPoint(
-                local_time, pre_step_position, kinetic_energy, pre_step_momentum
+                local_time, post_step_position, kinetic_energy, post_step_momentum
             );
         }
+        
         EndFunctionProfile("AddParticleInfoFromStep");
     }
 
@@ -696,6 +879,8 @@ namespace marex
         StartFunctionProfile();
         G4VPhysicalVolume* physicalVolume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
         G4LogicalVolume *logicalVolume = physicalVolume->GetLogicalVolume();
+        G4String volume = logicalVolume->GetName();
+
         G4Track* track = step->GetTrack();
         G4StepPoint* pre_step_point = step->GetPreStepPoint();
         G4StepPoint* post_step_point = step->GetPostStepPoint();
@@ -716,37 +901,18 @@ namespace marex
         G4ThreeVector   pre_step_position = pre_step_point->GetPosition();
         G4ThreeVector   post_step_position = post_step_point->GetPosition();
         G4double        edep = step->GetTotalEnergyDeposit();
-
+        if (edep == 0.0) {
+            return;
+        }
         mEnergyDeposits.emplace_back(
             EnergyDeposit(
-                track_id, particle_name,
+                track_id, volume, particle_name,
                 particle_pdg, local_time, global_time,
                 pre_step_position, post_step_position,
                 edep
             )
         );
         EndFunctionProfile("AddEnergyDepositInfoFromStep");
-    }
-
-    void EventManager::AddOpticalPhotonInfoFromTrackEnd(const G4Track* track)
-    {
-        StartFunctionProfile();
-        G4String particle_name = track->GetParticleDefinition()->GetParticleName();
-        if(particle_name == "opticalphoton")
-        {
-            mOpticalPhotonData.emplace_back(OpticalPhotonData(
-                track->GetTrackID(), track->GetParentID(),
-                GetParticlePDG(track->GetParentID()),
-                track->GetTotalEnergy(), track->GetTrackLength()/cm
-            ));
-        }
-        EndFunctionProfile("AddOpticalPhotonInfoFromTrackEnd");
-    }
-
-    void EventManager::AddThermalElectronInfoFromTrackEnd(const G4Track* track)
-    {
-        StartFunctionProfile();
-        EndFunctionProfile("AddThermalElectronInfoFromTrackEnd");
     }
 
     void EventManager::AddHitInfoFromStep(G4Step* step, G4TouchableHistory* history)
@@ -760,29 +926,231 @@ namespace marex
         G4double        globalTime = preStepPoint->GetGlobalTime();
         G4int           trackID = track->GetTrackID();
         G4int           parentID = track->GetParentID();
-        G4double        localTime = preStepPoint->GetLocalTime();
+        G4double        localTime = preStepPoint->GetGlobalTime();
         G4ThreeVector   particlePosition = preStepPoint->GetPosition();
         G4double        energy = preStepPoint->GetTotalEnergy();
         G4ThreeVector   particleMomentum = preStepPoint->GetMomentum();
 
-        // G4bool detected_hit = GetComponentFromCopyNumber(copyNo)->ProcessHits(step, history);
-        // mHits.emplace_back(
-        //     Hit(
-        //         copyNo, trackID,
-        //         parentID, localTime, globalTime,
-        //         particlePosition, particleMomentum,
-        //         energy, detected_hit,
-        //         GetScintillationAncestorPDG(trackID)
-        //     )
-        // );
+        mHits.emplace_back(
+            Hit(
+                copyNo, trackID,
+                parentID, localTime, globalTime,
+                particlePosition, particleMomentum,
+                energy
+            )
+        );
         EndFunctionProfile("AddHitInfoFromStep");
     }
 
-    void EventManager::EvaluateEvent()
+    void EventManager::AddNeutronInfoFromTrackBegin(const G4Track* track)
     {
-        for(size_t ii = 0; ii < mAnalysisFunctions.size(); ii++)
+        if(track->GetParticleDefinition()->GetParticleName() != "neutron") {
+            return;
+        }
+        if(track->GetParentID() == 0)
         {
-            mAnalysisFunctions[ii]();
+            mNeutronEventData.emplace_back(
+                NeutronEventData(
+                    G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID(),
+                    track->GetTrackID(),
+                    track->GetKineticEnergy(),
+                    GetNominalTOF(track->GetKineticEnergy()),
+                    track->GetGlobalTime(),
+                    track->GetPosition()
+                )
+            );
+            AddNeutronEventDataMapTrackID(track->GetTrackID(), mNeutronEventData.size() - 1);
+        }
+
+    }
+    void EventManager::AddNeutronInfoFromTrackEnd(const G4Track* track)
+    {
+        if(track->GetParticleDefinition()->GetParticleName() != "neutron") {
+            return;
+        }
+    }
+
+    void EventManager::AddNeutronInfoFromStep(const G4Step* step)
+    {
+        if(
+            step->GetTrack()->GetParticleDefinition()->GetParticleName() != "neutron" ||
+            step->GetTrack()->GetParentID() != 0
+        ) {
+            return;
+        }
+
+        StartFunctionProfile();
+        const G4Track* track = step->GetTrack();
+        const G4StepPoint *preStepPoint = step->GetPreStepPoint();
+        const G4StepPoint *postStepPoint = step->GetPostStepPoint();
+
+        G4String volumeName = GetVolumeName(step);
+        G4String postProcessName = GetPostProcessName(step);
+
+        G4int           trackID = track->GetTrackID();
+        G4ThreeVector   position = track->GetPosition();
+
+        G4int neutron_index = GetNeutronEventDataIndex(trackID);
+
+        if(mNeutronEventData[neutron_index].track_id != trackID) {
+            G4cout << "ERROR! Bug in neutron index." << G4endl;
+            exit(0);
+        }
+        
+        // check if neutron has arrived at the detector
+        if(mNeutronEventData[neutron_index].arrival_time == 0)
+        {   
+            // calculate delta phi, delta energy, and delta momentum.
+            G4ThreeVector preMomentumDirection = preStepPoint->GetMomentumDirection();
+            G4ThreeVector postMomentumDirection = postStepPoint->GetMomentumDirection();
+            double dphi = preMomentumDirection.angle(postMomentumDirection);
+            double dp   = (preMomentumDirection - postMomentumDirection).mag();
+            double dE   = fabs(
+                postStepPoint->GetKineticEnergy() - preStepPoint->GetKineticEnergy()
+            );
+
+            if(step->IsFirstStepInVolume() && volumeName == "Logical_MArEXActiveVolume")
+            {
+                mNeutronEventData[neutron_index].first_target_step_time = track->GetGlobalTime();
+                mNeutronEventData[neutron_index].first_target_step_energy = track->GetKineticEnergy();
+                mNeutronEventData[neutron_index].first_target_step_z = position.z();
+            }
+            // Keep track of how often each process occurs.
+            if(postProcessName == "hadElastic") {
+                mNeutronEventData[neutron_index].num_elastic += 1;
+            }
+            else if(postProcessName == "neutronInelastic") {
+                mNeutronEventData[neutron_index].num_inelastic += 1;
+            }
+            else if(postProcessName == "nCapture") {
+                mNeutronEventData[neutron_index].num_capture += 1;
+            }
+            else if(postProcessName == "nFission") {
+                mNeutronEventData[neutron_index].num_fission += 1;
+            }
+            if(
+                step->IsLastStepInVolume() && 
+                volumeName == "Logical_MArEXActiveVolume" &&
+                mNeutronEventData[neutron_index].num_elastic == 0 &&
+                mNeutronEventData[neutron_index].num_inelastic == 0 &&
+                mNeutronEventData[neutron_index].num_capture == 0 &&
+                mNeutronEventData[neutron_index].num_fission == 0
+            ) 
+            {
+                mNeutronEventData[neutron_index].safe_passage = 1;    
+            }
+
+            // If we have just reached the detector, 
+            // record the time and energy
+            if(step->IsFirstStepInVolume() && volumeName == "Logical_MArEXTargetDetector")
+            {
+                mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
+                mNeutronEventData[neutron_index].arrival_energy = postStepPoint->GetKineticEnergy();
+            }
+            else if(step->IsFirstStepInVolume() && volumeName == "Logical_MArEXTargetDetectorLeft")
+            {
+                mNeutronEventData[neutron_index].detector = 0;
+                mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
+                mNeutronEventData[neutron_index].arrival_energy = postStepPoint->GetKineticEnergy();
+            }
+            else if(step->IsFirstStepInVolume() && volumeName == "Logical_MArEXTargetDetectorRight")
+            {
+                mNeutronEventData[neutron_index].detector = 1;
+                mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
+                mNeutronEventData[neutron_index].arrival_energy = postStepPoint->GetKineticEnergy();
+            }
+
+            // Quantify scattering
+            if (dp > 0)
+            {
+                if (volumeName == "Logical_MArEXActiveVolume")
+                {
+                    mNeutronEventData[neutron_index].num_scatter += 1;
+                    if (
+                        mNeutronEventData[neutron_index].num_scatter == 1 &&
+                        mNeutronEventData[neutron_index].num_scatter_out == 0
+                    )
+                    {
+                        mNeutronEventData[neutron_index].first_scatter_x = position.x();
+                        mNeutronEventData[neutron_index].first_scatter_y = position.y();
+                        mNeutronEventData[neutron_index].first_scatter_z = position.z();
+                        mNeutronEventData[neutron_index].first_scatter_t = track->GetGlobalTime();
+                        mNeutronEventData[neutron_index].gas_first = 1;
+                    }
+                    else if((mNeutronEventData[neutron_index].num_scatter + mNeutronEventData[neutron_index].num_scatter_out) == 2)
+                    {
+                        mNeutronEventData[neutron_index].second_scatter_x = position.x();
+                        mNeutronEventData[neutron_index].second_scatter_y = position.y();
+                        mNeutronEventData[neutron_index].second_scatter_z = position.z();
+                        mNeutronEventData[neutron_index].second_scatter_t = track->GetGlobalTime();
+                    }
+                } 
+                else 
+                {
+                    mNeutronEventData[neutron_index].num_scatter_out += 1;    
+                    if (
+                        mNeutronEventData[neutron_index].num_scatter == 0 &&
+                        mNeutronEventData[neutron_index].num_scatter_out == 1
+                    ) 
+                    {
+                        mNeutronEventData[neutron_index].first_scatter_x = position.x();
+                        mNeutronEventData[neutron_index].first_scatter_y = position.y();
+                        mNeutronEventData[neutron_index].first_scatter_z = position.z();
+                        mNeutronEventData[neutron_index].first_scatter_t = track->GetGlobalTime();
+                    }
+                    else if((mNeutronEventData[neutron_index].num_scatter + mNeutronEventData[neutron_index].num_scatter_out) == 2)
+                    {
+                        mNeutronEventData[neutron_index].second_scatter_x = position.x();
+                        mNeutronEventData[neutron_index].second_scatter_y = position.y();
+                        mNeutronEventData[neutron_index].second_scatter_z = position.z();
+                        mNeutronEventData[neutron_index].second_scatter_t = track->GetGlobalTime();
+                    }
+                }    
+            }
+            if (volumeName != "Logical_MArEXTargetDetector" || 
+                volumeName != "Logical_MArEXTargetDetectorLeft" || 
+                volumeName != "Logical_MArEXTargetDetectorRight"
+            ){  
+                if (dp > mNeutronEventData[neutron_index].max_dp) {
+                    mNeutronEventData[neutron_index].max_dp = dp;
+                }
+                if (dE > mNeutronEventData[neutron_index].max_dE) {
+                    mNeutronEventData[neutron_index].max_dE = dE;
+                }
+                if (dphi > mNeutronEventData[neutron_index].max_dphi) {
+                    mNeutronEventData[neutron_index].max_dphi = dphi;
+                }   
+            }
+        }
+
+        EndFunctionProfile("AddNeutronInfoFromStep");
+    }
+    void EventManager::EvaluateRunBegin()
+    {
+        for(size_t ii = 0; ii < mAnalysisRunBeginFunctions.size(); ii++)
+        {
+            mAnalysisRunBeginFunctions[ii]();
+        }
+    }
+    void EventManager::EvaluateRunEnd()
+    {
+        for(size_t ii = 0; ii < mAnalysisRunEndFunctions.size(); ii++)
+        {
+            mAnalysisRunEndFunctions[ii]();
+        }
+    }
+    void EventManager::EvaluateEventBegin()
+    {
+        for(size_t ii = 0; ii < mAnalysisEventBeginFunctions.size(); ii++)
+        {
+            mAnalysisEventBeginFunctions[ii]();
+        }
+    }
+    void EventManager::EvaluateEventEnd()
+    {
+        for(size_t ii = 0; ii < mAnalysisEventEndFunctions.size(); ii++)
+        {
+            mAnalysisEventEndFunctions[ii]();
         }
     }
 }

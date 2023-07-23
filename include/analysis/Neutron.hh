@@ -11,7 +11,7 @@
 #include "G4SystemOfUnits.hh"
 #include "globals.hh"
 
-namespace marex
+namespace Artie
 {
     struct NeutronEventData
     {
@@ -34,8 +34,14 @@ namespace marex
         G4int num_scatter = {0};
         G4int num_scatter_out = {0};
         G4int gas_first = {0};
+        G4double first_scatter_x = {0};
+        G4double first_scatter_y = {0};
         G4double first_scatter_z = {0};
         G4double first_scatter_t = {0};
+        G4double second_scatter_x = {0};
+        G4double second_scatter_y = {0};
+        G4double second_scatter_z = {0};
+        G4double second_scatter_t = {0};
         G4double max_dphi = {0};
         G4double max_dp = {0};
         G4double max_dE = {0};

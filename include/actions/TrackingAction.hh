@@ -9,11 +9,15 @@
 #include "G4UserTrackingAction.hh"
 #include "G4Run.hh"
 #include "G4GenericMessenger.hh"
+#ifdef ARTIE_GEANT_10
+#include "g4root.hh"
+#else
 #include "G4AnalysisManager.hh"
+#endif
 
 #include "EventManager.hh"
 
-namespace marex
+namespace Artie
 {
     class TrackingAction : public G4UserTrackingAction
     {

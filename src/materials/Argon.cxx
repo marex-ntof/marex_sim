@@ -227,7 +227,8 @@ namespace marex
         // Add refractive index, absorption length and rayleigh scattering
         // to a new properties table.
         G4MaterialPropertiesTable* mptLAr = new G4MaterialPropertiesTable();
-
+#ifdef ARTIE_GEANT_10
+#else
         mptLAr->AddProperty(
             "RINDEX", 
             mRefractiveIndexEnergies, 
@@ -247,5 +248,6 @@ namespace marex
             mRayleighScatteringEnergies.size()
         );
         mMaterial->SetMaterialPropertiesTable(mptLAr);
+#endif
     }
 }

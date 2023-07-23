@@ -7,6 +7,7 @@
  */
 #pragma once
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include "G4VModularPhysicsList.hh"
 #include "G4EmStandardPhysics.hh"
@@ -14,8 +15,15 @@
 #include "G4DecayPhysics.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4HadronElasticProcess.hh"
+
+#ifdef ARTIE_GEANT_10
+#include "G4HadronFissionProcess.hh"
+#include "G4HadronCaptureProcess.hh"
+#else
 #include "G4NeutronFissionProcess.hh"
 #include "G4NeutronCaptureProcess.hh"
+#endif
+
 #include "G4HadronInelasticProcess.hh"
 
 #include "G4ParticleHPThermalScatteringData.hh"
@@ -36,9 +44,9 @@
 #include "G4VPhysicsConstructor.hh"
 #include "globals.hh"
 
-#include "Argon.hh"
+// #include "Argon.hh"
 
-namespace marex
+namespace Artie
 {
     class NeutronHPPhysics : public G4VPhysicsConstructor
     {

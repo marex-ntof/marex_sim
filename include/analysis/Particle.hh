@@ -17,7 +17,7 @@
 
 #include "Trajectory.hh"
 
-namespace marex
+namespace Artie
 {
     class Particle
     {
@@ -67,6 +67,8 @@ namespace marex
         G4int DaughterTrackID(const G4int ii=0) const;
 
         G4double GetGlobalCreationTime() const { return mGlobalCreationTime; }
+
+        Trajectory GetTrajectory() const {return mTrajectory;}
 
         G4double GetT(const G4int ii=0) const;
         G4double GetX(const G4int ii=0) const;

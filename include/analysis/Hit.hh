@@ -12,7 +12,7 @@
 #include "globals.hh"
 #include "G4ThreeVector.hh"
 
-namespace marex
+namespace Artie
 {
     struct Hit
     {

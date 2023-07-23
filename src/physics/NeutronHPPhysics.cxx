@@ -13,7 +13,7 @@ namespace marex
     :  G4VPhysicsConstructor(name)
     , mThermal(true)
     {
-        std::filesystem::create_directory(".physics");
+        std::filesystem::create_directory("physics/");
     }
 
     NeutronHPPhysics::~NeutronHPPhysics()
@@ -57,6 +57,25 @@ namespace marex
 
         // output the elastic cross section data
         dataSet1a->BuildPhysicsTable(*neutron);
+
+        G4ParticleHPThermalScattering* model1b = new G4ParticleHPThermalScattering();
+        G4ParticleHPThermalScatteringData* dataSet1b = new G4ParticleHPThermalScatteringData();
+        dataSet1b->BuildPhysicsTable(*neutron);
+
+        pManager->AddDiscreteProcess(process1);   
+        process1->RegisterMe(model1a);
+        process1->AddDataSet(dataSet1a);
+        if (mThermal) 
+        {
+            model1a->SetMinEnergy(4*eV);
+            process1->RegisterMe(model1b);
+            process1->AddDataSet(dataSet1b);
+        }
+        
+        /**
+         * Comment this section out if you don't want to save out cross section info!
+        */
+        
         std::size_t numberOfElements = G4Element::GetNumberOfElements();
         static G4ThreadLocal G4ElementTable *theElementTable = 0 ;
         if (!theElementTable) theElementTable= G4Element::GetElementTable();
@@ -64,7 +83,7 @@ namespace marex
         for (std::size_t ii = 0; ii < numberOfElements; ii++)
         {
             std::ofstream ElasticOutputFile;
-            ElasticOutputFile.open(".physics/" + (*theElementTable)[ii]->GetName() + "_elastic.csv");
+            ElasticOutputFile.open("physics/" + (*theElementTable)[ii]->GetName() + "_elastic.csv");
             for (G4int ie = 0 ; ie < 10000 ; ++ie )
             {
                 G4double eKinetic = 1.0e-5 * G4Pow::GetInstance()->powA ( 10.0 , ie/1000.0 ) *eV;
@@ -98,21 +117,6 @@ namespace marex
             }
         }
 
-        G4ParticleHPThermalScattering* model1b = new G4ParticleHPThermalScattering();
-        G4ParticleHPThermalScatteringData* dataSet1b = new G4ParticleHPThermalScatteringData();
-        dataSet1b->BuildPhysicsTable(*neutron);
-
-        pManager->AddDiscreteProcess(process1);   
-        process1->RegisterMe(model1a);
-        process1->AddDataSet(dataSet1a);
-        if (mThermal) 
-        {
-            model1a->SetMinEnergy(4*eV);
-            process1->RegisterMe(model1b);
-            process1->AddDataSet(dataSet1b);
-        }
-        
-
         // Inelastic Processes
         G4HadronInelasticProcess* process2 = new G4HadronInelasticProcess(
             "neutronInelastic"
@@ -129,11 +133,20 @@ namespace marex
         G4NeutronCaptureProcess* process3 = new G4NeutronCaptureProcess();
         G4ParticleHPCaptureData* dataSet3 = new G4ParticleHPCaptureData();
         dataSet3->BuildPhysicsTable(*neutron);
+
+        G4ParticleHPCapture* model3 = new G4ParticleHPCapture();
+        pManager->AddDiscreteProcess(process3);  
+        process3->AddDataSet(dataSet3);
+        process3->RegisterMe(model3);
+
+        /**
+         * Comment this section out if you don't want to save out the cross section information!
+        */
         auto CaptureCrossSections = G4ParticleHPManager::GetInstance()->GetCaptureCrossSections();
         for (std::size_t ii = 0; ii < numberOfElements; ii++)
         {
             std::ofstream CaptureFile;
-            CaptureFile.open(".physics/" + (*theElementTable)[ii]->GetName() + "_capture.csv");
+            CaptureFile.open("physics/" + (*theElementTable)[ii]->GetName() + "_capture.csv");
             for (G4int ie = 0 ; ie < 10000 ; ++ie )
             {
                 G4double eKinetic = 1.0e-5 * G4Pow::GetInstance()->powA ( 10.0 , ie/1000.0 ) *eV;
@@ -147,11 +160,6 @@ namespace marex
             }
             CaptureFile.close();
         }
-
-        G4ParticleHPCapture* model3 = new G4ParticleHPCapture();
-        pManager->AddDiscreteProcess(process3);  
-        process3->AddDataSet(dataSet3);
-        process3->RegisterMe(model3);
         
         // Neutron Fission  
         G4NeutronFissionProcess* process4 = new G4NeutronFissionProcess();

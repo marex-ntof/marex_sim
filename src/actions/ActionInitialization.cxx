@@ -9,8 +9,7 @@
 
 namespace marex
 {
-    ActionInitialization::ActionInitialization(
-    )
+    ActionInitialization::ActionInitialization()
     {
     }
 
@@ -18,14 +17,24 @@ namespace marex
     {
     }
 
+#ifdef MAREX_YAML
+    ActionInitialization::ActionInitialization(YAML::Node config)
+    : mConfig(config)
+    {
+    }
+#endif
+
     void ActionInitialization::Build() const
     {
+#ifdef MAREX_YAML
+        SetUserAction(new PrimaryGeneratorAction(mConfig));
+#else
         SetUserAction(new PrimaryGeneratorAction());
+#endif 
         SetUserAction(new RunAction());
         SetUserAction(new EventAction());
         SetUserAction(new SteppingAction());
         SetUserAction(new TrackingAction());
-        SetUserAction(new StackingAction());
     }
 
     void ActionInitialization::BuildForMaster() const

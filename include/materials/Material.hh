@@ -15,7 +15,7 @@
 #include "Argon.hh"
 #include "EventManager.hh"
 
-namespace marex
+namespace Artie
 {
     G4Material* CreateMaterial(G4String material, G4String volume);
 }

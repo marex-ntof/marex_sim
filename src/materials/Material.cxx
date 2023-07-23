@@ -27,6 +27,53 @@ namespace marex
         else if(material_name == "g4_liquid_argon") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_lAr");
         }
+        else if(material_name == "lithium_glass") {
+            G4Element* elSi = new G4Element("Silicon", "Si", 14., 28.09*g/mole);
+            G4Element* elO = new G4Element("Oxygen", "O", 8., 16.00*g/mole);
+            G4Element* elMg = new G4Element("Magnesium", "Mg", 12., 24.31*g/mole);
+            G4Element* elAl = new G4Element("Aluminum", "Al", 13., 26.98*g/mole);
+
+            G4Material* SiO2 = new G4Material("SiO2", 2.2*g/cm3, 2);
+            SiO2->AddElement(elSi, 1);
+            SiO2->AddElement(elO, 2);
+
+            G4Material* MgO = new G4Material("MgO", 3.58*g/cm3, 2);
+            MgO->AddElement(elMg, 1);
+            MgO->AddElement(elO, 1);
+
+            G4Material* Al2O3 = new G4Material("Al2O3", 3.97*g/cm3, 2);
+            Al2O3->AddElement(elAl, 2);
+            Al2O3->AddElement(elO, 3);
+
+            G4Isotope* lig_6 = new G4Isotope("Li6", 3., 6.);
+            G4Isotope* lig_7 = new G4Isotope("Li7", 3., 7.);
+            G4Element* li = new G4Element("Li", "Li", 2);
+            li->AddIsotope(lig_6, 95.0);
+            li->AddIsotope(lig_7, 5.0);
+
+            G4Material* Li2O = new G4Material("Li2O", 2.01 * g/cm3, 2);
+            Li2O->AddElement(li, 2);
+            Li2O->AddElement(elO, 1);
+
+            G4Isotope* Ce3Ion = new G4Isotope("Ce3Ion", 58, 140, 0.0*g/mole, 15.8708*keV);
+            G4Element* ce = new G4Element("Ce", "Ce", 1);
+            ce->AddIsotope(Ce3Ion, 100.0);
+
+            G4Material* Ce2O3 = new G4Material("Ce2O3", 7.13*g/cm3, 2);
+            Ce2O3->AddElement(ce, 2);
+            Ce2O3->AddElement(elO, 3);
+
+            material = new G4Material(
+                "LiG",
+                2.5 * g / cm3,
+                5
+            );
+            material->AddMaterial(SiO2, 0.56);
+            material->AddMaterial(MgO, 0.04);
+            material->AddMaterial(Al2O3, 0.18);
+            material->AddMaterial(Ce2O3, 0.04);
+            material->AddMaterial(Li2O, 0.18);
+        }
         else if(material_name == "concrete") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_CONCRETE");
         }
@@ -72,6 +119,9 @@ namespace marex
         }
         else if(material_name == "aluminum") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_Al");
+        }
+        else if(material_name == "sulfur") {
+            material = G4NistManager::Instance()->FindOrBuildMaterial("G4_S");
         }
         else if(material_name == "carbon") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_C");

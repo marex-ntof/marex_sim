@@ -1,12 +1,11 @@
 /**
  * @file EventManager.hh
  * @author Nicholas Carrara [nmcarrara@ucdavis.edu]
+ * @author Yashwanth Bezawada [ysbezawada@ucdavis.edu]
  * @brief 
  * @version 0.0
  * @details 
- *  Change log:
- *      2022/09/20 - Initial creation of the file.
- * @date 2022-09-20
+ * @date 2022-12-15
  */
 #pragma once
 #include <memory>
@@ -23,26 +22,38 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "G4VModularPhysicsList.hh"
 #include "G4GDMLParser.hh"
-#include "G4AnalysisManager.hh"
 
+#ifdef ARTIE_ROOT
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TGraph.h"
 #include "TMath.h"
+#include "TCanvas.h"
+#endif
 
+#ifdef ARTIE_GEANT_10
+#include "g4root.hh"
+#else
+#include "G4AnalysisManager.hh"
+#endif
+
+#ifdef ARTIE_YAML
 #include "yaml-cpp/yaml.h"
-
+#endif
 
 #include "Core.hh"
-#include "Particle.hh"
-#include "PhysicsList.hh"
-#include "OpticalPhotonData.hh"
-#include "ThermalElectronData.hh"
-#include "EnergyDeposit.hh"
 #include "Hit.hh"
+#include "Neutron.hh"
+#include "Profile.hh"
+#include "Particle.hh"
+#include "EnergyDeposit.hh"
+#include "Analysis.hh"
+#include "bkgdAnalysis.hh"
 
-namespace marex
+class PhysicsList;
+
+namespace Artie
 {
     struct Tuple
     {
@@ -52,7 +63,7 @@ namespace marex
         : name(n), index(i)
         {}
     };
-#ifdef MAREX_PROFILING
+#ifdef ARTIE_PROFILING
     struct Profile
     {
         G4int calls = 0;
@@ -74,11 +85,10 @@ namespace marex
 		EventManager();
         ~EventManager();
 
-        static void SetConfig(YAML::Node config);
-
-        // setters for various objects
-        static void SetPhysicsList(PhysicsList*);
 		static void SetParticle(G4String);
+#ifdef ARTIE_YAML
+        static void SetConfig(YAML::Node config);
+#endif
 
         // get the event manager
         static std::shared_ptr<EventManager>& GetEventManager() 
@@ -90,8 +100,51 @@ namespace marex
                 sCurrentTupleIndex = -1;
 			}return sInstance; 
 		}
-        inline static thread_local G4int EventID() { 
-            return G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID(); 
+        inline static thread_local G4int EventID() { return G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID(); }
+
+        // Number of threads
+        G4int NumberOfThreads()             { return sNumberOfThreads; }
+        void NumberOfThreads(G4int threads) { sNumberOfThreads = threads;}
+
+        // Number of runs
+        G4int NumberOfRuns()             { return sNumberOfRuns; }
+        void NumberOfRuns(G4int Runs) { sNumberOfRuns = Runs;}
+
+        // Number of events
+        G4int NumberOfEvents()             { return sNumberOfEvents; }
+        void NumberOfEvents(G4int Events) { sNumberOfEvents = Events;}
+
+        // Analysis parameters
+        G4int GetNx() { return mN_x; }
+        G4int GetNy() { return mN_y; }
+        G4int GetNz() { return mN_z; }
+
+        // Experimental hall parameters
+        G4double GetHallX() { return mHallX; }
+        G4double GetHallY() { return mHallY; }
+        G4double GetHallZ() { return mHallZ; }
+
+        // Detector Parameters
+        G4double GetDetEntrance() { return mDetEntrance; }
+        G4double GetDetLength() { return mDetLen; }
+
+        // Analysis Functions
+        std::vector<G4int> FindVoxel(G4double x, G4double y, G4double z, G4double x_fac, G4double y_fac, G4double z_fac){
+            std::vector<G4int> voxel;
+            voxel.push_back(std::floor(x*x_fac));
+            voxel.push_back(std::floor(y*y_fac));
+            voxel.push_back(std::floor(z*z_fac));
+            return voxel;
+        }
+
+        G4int GetNumBkgdEvents()    { return mNumBkgdEvents; }
+        G4String GetBkgdDistType()  { return mBkgdDistType; }
+        G4double GetEnergyCutLow()  { return mEnergyCutLow; }
+        G4double GetEnergyCutHigh() { return mEnergyCutHigh; }
+
+        //sign function
+        G4int sgn(G4double x) {
+            return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
         }
 
         // Argon properties
@@ -102,6 +155,28 @@ namespace marex
         G4double LArDensity()       { return mLArDensity; }
         G4double LArTemperature()   { return mLArTemperature; }
         G4double LArPressure()      { return mLArPressure; }
+
+        G4double FlightPath()       { return mDetectorEntrance; }
+        inline static G4double GetNominalTOF(G4double energy)
+        {
+            G4double kinetic_mass = energy/NeutronMassMeV();
+            G4double denominator = 1.0 - 1.0/((kinetic_mass + 1.0)*(kinetic_mass + 1.0));
+            G4double correction_factor = sqrt(1.0 / denominator);
+            return ((mDetectorEntrance) / SpeedOfLight()) * correction_factor;
+        }
+        inline static G4double GetNominalVelocity(G4double energy)
+        {
+            G4double kinetic_mass = energy/NeutronMassMeV();
+            G4double factor = sqrt(1.0 - 1.0/((kinetic_mass + 1.0)*(kinetic_mass + 1.0)));
+            return SpeedOfLight() * factor;
+        }
+        inline static G4double GetEnergyFromTOF(G4double tof)
+        {
+            G4double denom_term = (mDetectorEntrance - mTZeroLocation)/(SpeedOfLight() * tof);
+            G4double denominator = 1.0 - (denom_term * denom_term);
+            G4double factor = sqrt(1.0 / denominator) - 1;
+            return NeutronMassMeV() * factor;
+        }
 
         // Tuple related functions
         G4String OutputFileName()           { return sOutputFileName; }
@@ -116,32 +191,46 @@ namespace marex
         inline static thread_local G4int GetNumberOfParticles()         { return mParticleName.size(); }
         inline static thread_local G4int GetNumberOfSimulatedParticles(){ return mParticleName.size(); }
 
+        // lanl distribution
+        void ConstructEnergyDistribution();
+#ifdef ARTIE_ROOT
+        TH1D* GetLANLEnergyDistribution()       { return mLANLEnergyDistribution.get(); }
+        TH1D* GetLANLTOFHist(G4int ii)          { return mLANLTOFHists[ii].get(); }
+        TH2D* GetLANLBeamProfile()              { return mLANLBeamProfile.get(); }
+
+        TH1D* GetnTOFTOFDistribution()          { return mnTOFTOFDistribution.get(); }
+        TH2D* GetnTOFTOF()                      { return mnTOFTOF.get(); }
+        TH1D* GetnTOFTOFProjection(G4int ii)    { return mnTOFTOFProjections[ii].get(); }
+        TH2D* GetnTOFBeamProfile()              { return mnTOFBeamProfile.get(); }
+#endif
         //*************************************************************************************************//
         // Options to save various data to root files.
         void SaveParticleMaps(G4bool save)      { sSaveParticleMaps = save; }
         void SavePrimaryInfo(G4bool save)       { sSavePrimaryInfo = save; }
         void SaveParticleInfo(G4bool save)      { sSaveParticleInfo = save; }
         void SaveEnergyDeposits(G4bool save)    { sSaveEnergyDeposits = save; }
-        void SaveOpticalPhotons(G4bool save)    { sSaveOpticalPhotons = save; }
-        void SaveThermalElectrons(G4bool save)  { sSaveThermalElectrons = save; }
+        void SaveNeutronData(G4bool save)       { sSaveNeutronData = save; }
+        void SaveNonDetectedNeutrons(G4bool save) { sSaveNonDetectedNeutrons = save; }
         void SaveHits(G4bool save)              { sSaveHits = save; }
+        void SaveProfileData(G4bool save)       { sSaveProfileData = save; }
 
         G4bool SaveParticleMaps()       { return sSaveParticleMaps; }
         G4bool SavePrimaryInfo()        { return sSavePrimaryInfo; }
         G4bool SaveParticleInfo()       { return sSaveParticleInfo; }
         G4bool SaveEnergyDeposits()     { return sSaveEnergyDeposits; }
-        G4bool SaveOpticalPhotons()     { return sSaveOpticalPhotons; }
-        G4bool SaveThermalElectrons()   { return sSaveThermalElectrons; }
+        G4bool SaveNeutronData()        { return sSaveNeutronData; }
+        G4bool SaveNonDetectedNeutrons() { return sSaveNonDetectedNeutrons; }
         G4bool SaveHits()               { return sSaveHits; }
+        G4bool SaveProfileData()        { return sSaveProfileData; }
 
         void CreateTuples();
         void FillParticleMaps(G4int EventID = -1);
         void FillPrimaryInfo(G4int EventID = -1);
         void FillParticleInfo(G4int EventID = -1);
         void FillEnergyDeposits(G4int EventID = -1);
-        void FillOpticalPhotons(G4int EventID = -1);
-        void FillThermalElectrons(G4int EventID = -1);
         void FillHits(G4int EventID = -1);
+        void FillNeutronEventData(G4int EventID = -1);
+        void FillNeutronRunData();
         inline static thread_local void ClearEventData()
         {
             mParticleTrackID.clear();
@@ -149,13 +238,11 @@ namespace marex
             mParticlePDG.clear();
             mParticleParentTrackID.clear();
             mParticleAncestorTrackID.clear();
-            mScintillationAncestorTrackID.clear();
-            mScintillationAncestorPDG.clear();
             mPrimaryData.clear();
             mParticles.clear();
             mEnergyDeposits.clear();
-            mOpticalPhotonData.clear();
-            mThermalElectronData.clear();
+            mNeutronEventData.clear();
+            mNeutronEventDataMap.clear();
             mHits.clear();
         }
         //*************************************************************************************************//
@@ -176,18 +263,12 @@ namespace marex
         { mParticleParentTrackID[track_id] = parent_track_id; }
         inline static thread_local void AddParticleAncestorTrackID(G4int track_id, G4int ancestor_track_id) 
         { mParticleAncestorTrackID[track_id] = ancestor_track_id; }
-        inline static thread_local void AddScintillationAncestorTrackID(G4int track_id, G4int scintillation_track_id)
-        { mScintillationAncestorTrackID[track_id] = scintillation_track_id; }
-        inline static thread_local void AddScintillationAncestorPDG(G4int track_id, G4int scintillation_pdg)
-        { mScintillationAncestorPDG[track_id] = scintillation_pdg; }
 
         inline static thread_local const G4int& GetParticleTrackID(G4int track_id)          { return mParticleTrackID[track_id]; }
         inline static thread_local const G4String& GetParticleName(G4int track_id)          { return mParticleName[track_id]; }
         inline static thread_local const G4int& GetParticlePDG(G4int track_id)              { return mParticlePDG[track_id]; }
         inline static thread_local const G4int& GetParticleParentTrackID(G4int track_id)    { return mParticleParentTrackID[track_id]; }
         inline static thread_local const G4int& GetParticleAncestorTrackID(G4int track_id)  { return mParticleAncestorTrackID[track_id]; }
-        inline static thread_local const G4int& GetScintillationAncestorTrackID(G4int track_id) { return mScintillationAncestorTrackID[track_id]; }
-        inline static thread_local const G4int& GetScintillationAncestorPDG(G4int track_id)     { return mScintillationAncestorPDG[track_id]; }
 
         // Get the entire map object
         inline static thread_local const std::map<G4int, G4int>&    GetParticleTrackIDMap()        { return mParticleTrackID; }               
@@ -195,8 +276,11 @@ namespace marex
         inline static thread_local const std::map<G4int, G4int>&    GetParticlePDGMap()            { return mParticlePDG; }
         inline static thread_local const std::map<G4int, G4int>&    GetParticleParentTrackIDMap()  { return mParticleParentTrackID; }
         inline static thread_local const std::map<G4int, G4int>&    GetParticleAncestorTrackIDMap(){ return mParticleAncestorTrackID; }
-        inline static thread_local const std::map<G4int, G4int>&    GetScintillationAncestorTrackIDMap() { return mScintillationAncestorTrackID; }
-        inline static thread_local const std::map<G4int, G4int>&    GetScintillationAncestorPDGMap()     { return mScintillationAncestorPDG; }
+
+        // Neutron event data map
+        inline static thread_local void AddNeutronEventDataMapTrackID(G4int track_id, G4int index)
+        { mNeutronEventDataMap[track_id] = index; }
+        inline static thread_local const G4int& GetNeutronEventDataIndex(G4int track_id) { return mNeutronEventDataMap[track_id]; }
         //*************************************************************************************************//
 
         //*************************************************************************************************//
@@ -234,19 +318,8 @@ namespace marex
         //*************************************************************************************************//
         // Energy deposit level info to keep track of
         void AddEnergyDepositInfoFromStep(const G4Step* step);
-        inline static thread_local const std::vector<EnergyDeposit>& GetEnergyDeposits() { return mEnergyDeposits; }
-        //*************************************************************************************************//
-
-        //*************************************************************************************************//
-        // Optical photon level info to keep track of
-        void AddOpticalPhotonInfoFromTrackEnd(const G4Track* track);
-        inline static thread_local const std::vector<OpticalPhotonData>& GetOpticalPhotonData() { return mOpticalPhotonData; }
-        //*************************************************************************************************//
-
-        //*************************************************************************************************//
-        // Thermal electron level info to keep track of
-        void AddThermalElectronInfoFromTrackEnd(const G4Track* track);
-        inline static thread_local const std::vector<ThermalElectronData>& GetThermalElectronData() { return mThermalElectronData; }
+        inline static thread_local const std::vector<EnergyDeposit>& GetEnergyDeposits() 
+        { return mEnergyDeposits; }
         //*************************************************************************************************//
 
         //*************************************************************************************************//
@@ -256,21 +329,29 @@ namespace marex
         //*************************************************************************************************//
 
         //*************************************************************************************************//
-        // Scintillation stacking physics
-        const G4bool& TrackOpticalPhotons()    { return sTrackOpticalPhotons; }
-        const G4bool& TrackThermalElectrons()  { return sTrackThermalElectrons; }
-
-        void TrackOpticalPhotons(G4bool track)  { sTrackOpticalPhotons = track; }
-        void TrackThermalElectrons(G4bool track){ sTrackThermalElectrons = track; }
+        // Neutron level info to keep track of
+        void AddNeutronInfoFromTrackBegin(const G4Track* track);
+        void AddNeutronInfoFromTrackEnd(const G4Track* track);
+        void AddNeutronInfoFromStep(const G4Step* step);
+        void AddNeutronInfoFromRun();
+        inline static thread_local const std::vector<NeutronEventData>& GetNeutronEventData() { return mNeutronEventData; }
         //*************************************************************************************************//
 
         //*************************************************************************************************//
         // Analysis related functions
-        void EvaluateEvent();
-        void AddAnalysisFunction(std::function<void()> func) { mAnalysisFunctions.emplace_back(func); }
+        void EvaluateRunBegin();
+        void EvaluateRunEnd();
+        void EvaluateEventBegin();
+        void EvaluateEventEnd();
+        void AddAnalysisRunBeginFunction(std::function<void()> func)    { mAnalysisRunBeginFunctions.emplace_back(func); }
+        void AddAnalysisRunEndFunction(std::function<void()> func)      { mAnalysisRunEndFunctions.emplace_back(func); }
+        void AddAnalysisEventBeginFunction(std::function<void()> func)  { mAnalysisEventBeginFunctions.emplace_back(func); }
+        void AddAnalysisEventEndFunction(std::function<void()> func)    { mAnalysisEventEndFunctions.emplace_back(func); }
         //*************************************************************************************************//
 
-#ifdef MAREX_PROFILING
+        void SaveGDML();
+
+#ifdef ARTIE_PROFILING
         std::map<G4String, Profile> GetFunctionProfiles()     { return sFunctionProfiles; }
         inline void EndFunctionProfile(G4String func)   { 
             sFunctionProfiles[func].calls += 1; 
@@ -294,26 +375,41 @@ namespace marex
         inline static G4int sNumberOfThreads =  {1};
         inline static G4int sNumberOfRuns =  {1};
         inline static G4int sNumberOfEvents =  {1};
-        
+
         static std::shared_ptr<EventManager> sInstance;
         static std::mutex sMutex;
 
-        inline static std::shared_ptr<PhysicsList> sPhysicsList = {nullptr};
-        inline static G4double sEventMaxTime = 2.e19 * ns;
+        inline static G4double sEventMaxTime = {2.e19 * ns};
 
-        inline static G4String sOutputFileName = "default";
-        inline static G4int sCurrentTupleIndex = 0;
+        inline static G4String sOutputFileName = {"default"};
+        inline static G4int sCurrentTupleIndex = {0};
+
+        // Analysis related parameters
+        inline static G4int mN_x = 0;
+        inline static G4int mN_y = 0;
+        inline static G4int mN_z = 0;
+        inline static G4int mNumBkgdEvents = 0;
+        inline static G4String mBkgdDistType = {"Uniform"};
+
+        // Experimental hall parameters
+        inline static G4double mHallX = {500 * m};
+        inline static G4double mHallY = {500 * m};
+        inline static G4double mHallZ = {500 * m};
+
+        // Detector Parameters
+        inline static G4double mDetEntrance = {30 * m};
+        inline static G4double mDetLen = {10 * cm};
 
         // Options to save various data to root files.
         inline static std::vector<Tuple> sTuples;
-        inline static G4bool sSaveParticleMaps = true;
-        inline static G4bool sSavePrimaryInfo = true;
+        inline static G4bool sSaveParticleMaps = {true};
+        inline static G4bool sSavePrimaryInfo = {true};
         inline static G4bool sSaveParticleInfo = true;
         inline static G4bool sSaveEnergyDeposits = true;
-        inline static G4bool sSaveOpticalPhotons = true;
-        inline static G4bool sSaveThermalElectrons = true;
-        inline static G4bool sSaveHits = true;
+        inline static G4bool sSaveHits = {true};
+        inline static G4bool sSaveNeutronData = {true};
         inline static G4bool sSaveProfileData = {true};
+        inline static G4bool sSaveNonDetectedNeutrons = {true};
 
         // Argon related parameters
         inline static G4bool mUseG4Definition = {false};
@@ -324,15 +420,7 @@ namespace marex
         inline static G4double mLArTemperature = {85.0 * kelvin};
         inline static G4double mLArPressure = {0.952 * atmosphere};
 
-        inline static G4double mEnergyCutLow = { 40 * keV };
-        inline static G4double mEnergyCutHigh = { 70 * keV };
-        inline static G4double mTZeroLocation = {-1 * m};
-        inline static G4double mDetectorEntrance = {30.0 * m};
-
-        // Scintillation stacking physics
-        inline static G4bool sTrackOpticalPhotons = true;
-        inline static G4bool sTrackThermalElectrons = false;
-
+        //*************************************************************************************************//
         // Event level maps to keep track of particle ids,
         // parent ids, ancestor ids and pdg codes.
         inline static thread_local std::map<G4int, G4int>      mParticleTrackID;
@@ -340,21 +428,58 @@ namespace marex
         inline static thread_local std::map<G4int, G4int>      mParticlePDG;
         inline static thread_local std::map<G4int, G4int>      mParticleParentTrackID;
         inline static thread_local std::map<G4int, G4int>      mParticleAncestorTrackID;
-        inline static thread_local std::map<G4int, G4int>      mScintillationAncestorTrackID;
-        inline static thread_local std::map<G4int, G4int>      mScintillationAncestorPDG;
 
         inline static thread_local std::vector<PrimaryData>    mPrimaryData;
         inline static thread_local std::vector<Particle>       mParticles;
         inline static thread_local std::vector<EnergyDeposit>  mEnergyDeposits;
-        inline static thread_local std::vector<OpticalPhotonData>   mOpticalPhotonData;
-        inline static thread_local std::vector<ThermalElectronData> mThermalElectronData;
+        inline static thread_local std::vector<NeutronEventData> mNeutronEventData;
+        inline static thread_local std::vector<ProfileEventData> mProfileEventData;
+        inline static thread_local std::map<G4int, G4int> mNeutronEventDataMap;
         inline static thread_local std::vector<Hit> mHits;
+        inline static NeutronRunData sNeutronRunData;
+        //*************************************************************************************************//
 
-        // nTOF energy distribution
-        inline static G4String mnTOFEnergyDistributionFileName = {"resolution13a.root"};
-        inline static G4String mnTOFEnergyDistributionName = {"tally5"};
-        inline static TFile* mnTOFEnergyDistributionFile = {0};
-        inline static std::shared_ptr<TH1D> mnTOFEnergyDistribution = {nullptr};
+        //*************************************************************************************************//
+        // Analysis functions
+        inline static std::vector<std::function<void()>> mAnalysisRunBeginFunctions = {};
+        inline static std::vector<std::function<void()>> mAnalysisRunEndFunctions = {};
+        inline static std::vector<std::function<void()>> mAnalysisEventBeginFunctions = {};
+        inline static std::vector<std::function<void()>> mAnalysisEventEndFunctions = {};
+        //*************************************************************************************************//
+
+        //*************************************************************************************************//
+        // GDML parser
+        G4GDMLParser* mGDMLParser;
+        //*************************************************************************************************//
+
+        inline static G4double mEnergyCutLow = { 40 * keV };
+        inline static G4double mEnergyCutHigh = { 70 * keV };
+        inline static G4double mTZeroLocation = {-1 * m};
+        inline static G4double mDetectorEntrance = {30.0 * m};
+        
+        // LANL energy distribution
+        inline static G4String mLANLEnergyDistributionFileName = {"resolution13a.root"};
+        inline static G4String mLANLEnergyDistributionName = {"tally5"};
+        inline static TFile* mLANLEnergyDistributionFile = {0};
+        inline static std::shared_ptr<TH1D> mLANLEnergyDistribution = {nullptr};
+
+        // LANL beam profile
+        inline static G4String mLANLBeamProfileFileName = {"resolution13a.root"};
+        inline static G4String mLANLBeamProfileName = {"tally5"};
+        inline static TFile mLANLBeamProfileFile = {0};
+        inline static std::shared_ptr<TH2D> mLANLBeamProfile = {nullptr};
+
+        // LANL tof distribution
+        inline static G4String mLANLTOFFileName = {"resolution13a.root"};
+        inline static G4String mLANLTOFName = {"tally15"};
+        inline static TFile* mLANLTOFFile = {0};
+        inline static std::vector<std::shared_ptr<TH1D>> mLANLTOFHists = {};
+
+        // nTOF neutron beam TOF distribution
+        inline static G4String mnTOFTOFDistributionFileName = {"Neutron_Gamma_Flux_1cmColli_188m.root"};
+        inline static G4String mnTOFTOFDistributionName = {"histfluka"};
+        inline static TFile* mnTOFTOFDistributionFile = {0};
+        inline static std::shared_ptr<TH1D> mnTOFTOFDistribution = {nullptr};
 
         // nTOF beam profile
         inline static G4String mnTOFBeamProfileFileName = {"Profile_188m.root"};
@@ -362,7 +487,7 @@ namespace marex
         inline static TFile* mnTOFBeamProfileFile = {0};
         inline static std::shared_ptr<TH2D> mnTOFBeamProfile = {nullptr};
 
-        // nTOF tof distribution
+        // nTOF tof distribution (Moderator function)
         inline static G4String mnTOFTOFFileName = {"RF.root"};
         inline static G4String mnTOFTOFName = {"histfluka"};
         inline static TFile* mnTOFTOFFile = {0};
@@ -372,14 +497,10 @@ namespace marex
         inline static G4bool mSavedParameters = {false};
         inline static YAML::Node mConfig;    
 
-
-        // Analysis functions
-        std::vector<std::function<void()>> mAnalysisFunctions;
-
-#ifdef MAREX_PROFILING
+#ifdef ARTIE_PROFILING
         inline static thread_local std::map<G4String, Profile> sFunctionProfiles = {};
         inline static thread_local std::vector<G4int> sProfilingTime = {};
 #endif
-        
+
     };
 }
