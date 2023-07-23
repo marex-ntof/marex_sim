@@ -140,6 +140,43 @@ namespace marex
 
         // Set up energy distributions
         std::string distribution_type = mConfig["generator"]["energy_distribution"]["distribution_type"].as<std::string>();
+        if(distribution_type == "lanl") 
+        { 
+            mLANLEnergyDistributionFileName = mConfig["generator"]["energy_distribution"]["distribution_file"].as<std::string>();
+            G4cout << mLANLEnergyDistributionFileName << G4endl;
+            mLANLEnergyDistributionName = mConfig["generator"]["energy_distribution"]["distribution_name"].as<std::string>();
+            mLANLEnergyDistributionFile = new TFile(mLANLEnergyDistributionFileName);
+            TGraph *DistributionGraph = (TGraph*)mLANLEnergyDistributionFile->Get(mLANLEnergyDistributionName);
+
+            // Make variable-bin histogram for beam energy
+            const G4int nlogbins=500;        
+            G4double xmin = 1.e-3;  //eV
+            G4double xmax = 1.e7;   //eV
+            G4double *xbins = new G4double[nlogbins+1];
+            G4double xlogmin = TMath::Log10(xmin);
+            G4double xlogmax = TMath::Log10(xmax);
+            G4double dlogx   = (xlogmax-xlogmin)/((G4double)nlogbins);
+            for (G4int i=0;i<=nlogbins;i++) 
+            {
+                G4double xlog = xlogmin+ i*dlogx;
+                xbins[i] = TMath::Exp( TMath::Log(10) * xlog ); 
+            }
+            mLANLEnergyDistribution.reset(
+                new TH1D("LANLBeamEnergy", "LANLBeamEnergy", nlogbins, xbins)
+            );
+            auto nPoints = DistributionGraph->GetN(); // number of points 
+            G4double x, y;
+            for(G4int i=0; i < nPoints; ++i) {
+                DistributionGraph->GetPoint(i, x, y); //eV
+                if( 
+                    x / 1000 > mEnergyCutLow && 
+                    x / 1000 < mEnergyCutHigh
+                ) 
+                {
+                    mLANLEnergyDistribution->Fill(x,y);
+                }
+            } 
+        }
         if(distribution_type == "ntof")
         {
             mnTOFTOFDistributionFileName = mConfig["generator"]["energy_distribution"]["distribution_file"].as<std::string>();
@@ -170,6 +207,9 @@ namespace marex
         }
         
         std::string profile_type = mConfig["generator"]["beam_profile"]["profile_type"].as<std::string>();
+        if(profile_type == "lanl") 
+        {
+        }
         if(profile_type == "ntof") 
         {
             mnTOFBeamProfileFileName = mConfig["generator"]["beam_profile"]["profile_file"].as<std::string>();
@@ -179,6 +219,22 @@ namespace marex
         }
 
         std::string tof_type = mConfig["generator"]["time_of_flight"]["tof_type"].as<std::string>();
+        if(tof_type == "lanl") 
+        {
+            mLANLTOFFileName = mConfig["generator"]["time_of_flight"]["tof_file"].as<std::string>();
+            mLANLTOFName = mConfig["generator"]["time_of_flight"]["tof_name"].as<std::string>();
+
+            mLANLTOFFile = new TFile(mLANLTOFFileName);
+            std::string histEnergies[7] = {
+                "1", "10", "100", "1000", "10000", "30000", "100000"
+            };
+            for (G4int i = 0; i < std::size(histEnergies); i++)
+            {
+                std::string hist_name = "hist_" + histEnergies[i] + "ev";
+                TH1D *h1 = (TH1D*)mLANLTOFFile->Get(hist_name.c_str());
+                mLANLTOFHists.emplace_back(h1);
+            }
+        }
         if(tof_type == "ntof") 
         {
             mnTOFTOFFileName = mConfig["generator"]["time_of_flight"]["tof_file"].as<std::string>();
@@ -198,7 +254,9 @@ namespace marex
                 mnTOFTOFProjections.emplace_back(projection);
             }
         }
+
         G4GDMLParser* mGDMLParser;
+
     }
 
     void EventManager::SaveGDML()
@@ -245,6 +303,38 @@ namespace marex
     void EventManager::ConstructEnergyDistribution()
     {
 #ifdef MAREX_ROOT
+        mLANLEnergyDistributionFile = new TFile(mLANLEnergyDistributionFileName);
+        TGraph *DistributionGraph = (TGraph*)mLANLEnergyDistributionFile->Get(mLANLEnergyDistributionName);
+
+        // Make variable-bin histogram for beam energy
+        const G4int nlogbins=500;        
+        G4double xmin = 1.e-3;  //eV
+        G4double xmax = 1.e7;   //eV
+        G4double *xbins = new G4double[nlogbins+1];
+        G4double xlogmin = TMath::Log10(xmin);
+        G4double xlogmax = TMath::Log10(xmax);
+        G4double dlogx   = (xlogmax-xlogmin)/((G4double)nlogbins);
+        for (G4int i=0;i<=nlogbins;i++) 
+        {
+            G4double xlog = xlogmin+ i*dlogx;
+            xbins[i] = TMath::Exp( TMath::Log(10) * xlog ); 
+        }
+
+        mLANLEnergyDistribution.reset(
+            new TH1D("LANLBeamEnergy", "LANLBeamEnergy", nlogbins, xbins)
+        );
+        auto nPoints = DistributionGraph->GetN(); // number of points 
+        G4double x, y;
+        for(G4int i=0; i < nPoints; ++i) {
+            DistributionGraph->GetPoint(i, x, y); //eV
+            if( 
+                x / 1000 > mEnergyCutLow && 
+                x / 1000 < mEnergyCutHigh
+            ) 
+            {
+                mLANLEnergyDistribution->Fill(x,y);
+            }
+        }
 #endif
     }
 
@@ -1009,7 +1099,7 @@ namespace marex
                 postStepPoint->GetKineticEnergy() - preStepPoint->GetKineticEnergy()
             );
 
-            if(step->IsFirstStepInVolume() && volumeName == "Logical_MArEXActiveVolume")
+            if(step->IsFirstStepInVolume() && volumeName == "Logical_ActiveVolume")
             {
                 mNeutronEventData[neutron_index].first_target_step_time = track->GetGlobalTime();
                 mNeutronEventData[neutron_index].first_target_step_energy = track->GetKineticEnergy();
@@ -1030,7 +1120,7 @@ namespace marex
             }
             if(
                 step->IsLastStepInVolume() && 
-                volumeName == "Logical_MArEXActiveVolume" &&
+                volumeName == "Logical_ActiveVolume" &&
                 mNeutronEventData[neutron_index].num_elastic == 0 &&
                 mNeutronEventData[neutron_index].num_inelastic == 0 &&
                 mNeutronEventData[neutron_index].num_capture == 0 &&
@@ -1042,18 +1132,18 @@ namespace marex
 
             // If we have just reached the detector, 
             // record the time and energy
-            if(step->IsFirstStepInVolume() && volumeName == "Logical_MArEXTargetDetector")
+            if(step->IsFirstStepInVolume() && volumeName == "Logical_TargetDetector")
             {
                 mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
                 mNeutronEventData[neutron_index].arrival_energy = postStepPoint->GetKineticEnergy();
             }
-            else if(step->IsFirstStepInVolume() && volumeName == "Logical_MArEXTargetDetectorLeft")
+            else if(step->IsFirstStepInVolume() && volumeName == "Logical_TargetDetectorLeft")
             {
                 mNeutronEventData[neutron_index].detector = 0;
                 mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
                 mNeutronEventData[neutron_index].arrival_energy = postStepPoint->GetKineticEnergy();
             }
-            else if(step->IsFirstStepInVolume() && volumeName == "Logical_MArEXTargetDetectorRight")
+            else if(step->IsFirstStepInVolume() && volumeName == "Logical_TargetDetectorRight")
             {
                 mNeutronEventData[neutron_index].detector = 1;
                 mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
@@ -1063,7 +1153,7 @@ namespace marex
             // Quantify scattering
             if (dp > 0)
             {
-                if (volumeName == "Logical_MArEXActiveVolume")
+                if (volumeName == "Logical_ActiveVolume")
                 {
                     mNeutronEventData[neutron_index].num_scatter += 1;
                     if (
@@ -1107,9 +1197,9 @@ namespace marex
                     }
                 }    
             }
-            if (volumeName != "Logical_MArEXTargetDetector" || 
-                volumeName != "Logical_MArEXTargetDetectorLeft" || 
-                volumeName != "Logical_MArEXTargetDetectorRight"
+            if (volumeName != "Logical_TargetDetector" || 
+                volumeName != "Logical_TargetDetectorLeft" || 
+                volumeName != "Logical_TargetDetectorRight"
             ){  
                 if (dp > mNeutronEventData[neutron_index].max_dp) {
                     mNeutronEventData[neutron_index].max_dp = dp;

@@ -15,6 +15,19 @@ namespace marex
         if(material_name == "gaseous_argon") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_Ar");
         }
+        else if(material_name == "gaseous_argon_300bar") {
+            G4Isotope* Ar36 = new G4Isotope("Ar36", 18., 36, 35.9675*g/mole);
+            G4Isotope* Ar38 = new G4Isotope("Ar38", 18., 38, 37.9627*g/mole);
+            G4Isotope* Ar40 = new G4Isotope("Ar40", 18., 40, 39.9624*g/mole);
+
+            G4Element* elAr  = new G4Element("Natural Argon", "Ar", 3);
+            elAr->AddIsotope(Ar36,0.334*perCent);
+            elAr->AddIsotope(Ar38,0.063*perCent);
+            elAr->AddIsotope(Ar40,99.603*perCent);
+
+            material = new G4Material("Gaseous Argon 300bar", 0.4837 * g/cm3, 1);
+            material->AddElement(elAr, 1);
+        }
         else if(material_name == "liquid_argon") {
             if(EventManager::GetEventManager()->UseG4Definition()) {
                 material = G4NistManager::Instance()->FindOrBuildMaterial("G4_lAr");
@@ -74,6 +87,17 @@ namespace marex
             material->AddMaterial(Ce2O3, 0.04);
             material->AddMaterial(Li2O, 0.18);
         }
+        else if(material_name == "borated_polyethylene") {
+            G4NistManager* man = G4NistManager::Instance();
+            material = new G4Material("Borated Polyethylene", 1.04*g/cm3, 2);
+            G4Material* polyethylene = man->FindOrBuildMaterial("G4_POLYETHYLENE");
+            G4Material* boron = man->FindOrBuildMaterial("G4_B");
+            material->AddMaterial(polyethylene, 0.95);
+            material->AddMaterial(boron, 0.05);
+        }
+        else if(material_name == "graphite") {
+            material = G4NistManager::Instance()->FindOrBuildMaterial("G4_GRAPHITE");
+        }
         else if(material_name == "concrete") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_CONCRETE");
         }
@@ -125,6 +149,9 @@ namespace marex
         }
         else if(material_name == "carbon") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_C");
+        }
+        else if(material_name == "tungsten") {
+            material = G4NistManager::Instance()->FindOrBuildMaterial("G4_W");
         }
         else if(material_name == "brass") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_BRASS");
