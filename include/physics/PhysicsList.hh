@@ -52,7 +52,7 @@
 
 #include "NeutronHPPhysics.hh"
 
-namespace Artie
+namespace marex
 {
     class PhysicsList : public G4VModularPhysicsList
     {

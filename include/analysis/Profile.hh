@@ -11,7 +11,7 @@
 #include "G4SystemOfUnits.hh"
 #include "globals.hh"
 
-namespace Artie
+namespace marex
 {
     struct ProfileEventData
     {

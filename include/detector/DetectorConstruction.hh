@@ -36,14 +36,18 @@
 #include "G4UIcmdWithABool.hh"
 #include "G4GDMLParser.hh"
 
+#ifdef MAREX_YAML
 #include "yaml-cpp/yaml.h"
+#endif
 
-#include "EAR1.hh"
-#include "EAR2.hh"
-#include "LiG.hh"
 #include "Material.hh"
+#include "Filters.hh"
+#include "nTOF.hh"
+#include "SensitiveDetector.hh"
 #include "SimpleDetector.hh"
+#include "LiGDetector.hh"
 #include "Target.hh"
+#include "MArEXTarget.hh"
 
 namespace marex
 {
@@ -53,7 +57,9 @@ namespace marex
         DetectorConstruction();
         ~DetectorConstruction();
 
+#ifdef MAREX_YAML
         DetectorConstruction(YAML::Node config);
+#endif
 
         void DefineMaterials();
 
@@ -74,10 +80,15 @@ namespace marex
         G4LogicalVolume* mLogicalExperimentalHall;
         G4VPhysicalVolume* mPhysicalExperimentalHall;
 
-        // EAR1 mEAR1;
-        // Target mTarget;
-        // SimpleDetector mSimpleDetector;
+        Target mTarget;
+        MArEXTarget mMArEXTarget;
+        Filters mFilters;
+        nTOF mnTOF;
+        SimpleDetector mSimpleDetector;
+        LiGDetector mLiGDetector;
 
+#ifdef MAREX_YAML
         YAML::Node mConfig;
+#endif
     };
 }

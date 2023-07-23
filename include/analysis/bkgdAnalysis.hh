@@ -12,7 +12,7 @@
 
 #include "TRandom3.h"
 
-namespace Artie
+namespace marex
 {
     struct bkgdAnalysisTuple
     {

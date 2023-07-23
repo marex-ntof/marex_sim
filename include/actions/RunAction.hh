@@ -9,16 +9,16 @@
 #include "G4UserRunAction.hh"
 #include "G4Run.hh"
 #include "G4GenericMessenger.hh"
-#ifdef ARTIE_GEANT_10
+#ifdef MAREX_GEANT_10
 #include "g4root.hh"
 #else
 #include "G4AnalysisManager.hh"
 #endif
 
-#include "ArtieIIPrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorAction.hh"
 #include "EventManager.hh"
 
-namespace Artie
+namespace marex
 {
     class RunAction : public G4UserRunAction
     {

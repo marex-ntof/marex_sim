@@ -6,14 +6,29 @@
  * @date 2022-04-27
  */
 #pragma once
+#include <memory>
+#include <random>
+#include <array>
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleTable.hh"
 #include "G4ParticleGun.hh"
 #include "G4IonTable.hh"
 #include "G4Event.hh"
+#include "Randomize.hh"
+#include "EventManager.hh"
+
+#include "TFile.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TGraph.h"
+#include "TMath.h"
+#include "TRandom3.h"
 
 #include "Core.hh"
+#include "EventManager.hh"
+
+#include "yaml-cpp/yaml.h"
 
 namespace marex
 {
@@ -23,51 +38,42 @@ namespace marex
         PrimaryGeneratorAction();
         ~PrimaryGeneratorAction();
 
-        PrimaryGeneratorAction(
-            G4int numberOfParticles, 
-            G4String particleName,
-            G4double momentum = {0. * MeV},
-            G4double energy = {0. * MeV},
-            G4ThreeVector position = {G4ThreeVector(0.,0.,0.)}, 
-            G4ThreeVector momentumDirection = {G4ThreeVector(0.,0.,1.)}
-        );
-
-        void SetPrimaries(std::vector<PrimaryGeneration> primaries);
-
-        void SetNumberOfParticles(G4int numberOfParticles);
-        void SetParticleName(G4String particleName);
-        void SetParticleMomentum(G4double momentum);
-        void SetParticleEnergy(G4double energy);
-        void SetParticlePosition(G4ThreeVector position);
-        void SetParticleMomentumDirection(G4ThreeVector momentumDirection);
-
-        // method to access particle gun
-        G4int GetNumberOfParticles() const                  { return mNumberOfParticles; }
-        G4ParticleDefinition* GetParticle() const           { return mParticle; }
-
-        G4String GetParticleName() const                    { return mParticleName; }
-        G4double GetParticleMomentum() const                { return mParticleMomentum; }
-        G4double GetParticleEnergy() const                  { return mParticleEnergy; }
-        G4ThreeVector GetParticlePosition() const           { return mParticlePosition; }
-        G4ThreeVector GetParticleMomentumDirection() const  { return mParticleMomentumDirection; }
-        G4ParticleGun* GetParticleGun() const               { return mParticleGun; }
-
         virtual void GeneratePrimaries(G4Event* event);
+        void ConstructEnergyDistribution();
+        G4double SampleBeamEnergy();
+        G4double SampleTOF(G4double beam_energy);
+        G4ThreeVector SampleBeamProfile(G4double t_zero_location);
+        G4ThreeVector SampleBeamMomentum(G4ThreeVector StartPosition);
+
+        PrimaryGeneratorAction(YAML::Node config);
+        YAML::Node Config() const { return mConfig; }
 
     private:
         G4ParticleGun* mParticleGun;
-
-        G4int mNumberOfParticles;
-        G4ParticleTable* mParticleTable;
-        G4IonTable* mIonTable;
-        G4ParticleDefinition* mParticle;
 
         G4String mParticleName;
         G4double mParticleMomentum;
         G4double mParticleEnergy;
         G4ThreeVector mParticlePosition;
         G4ThreeVector mParticleMomentumDirection;
+
+        G4double mDetEntrance =     { 188 * m };
+        G4double mTZeroLocation =   { -30.0 * m };
+        G4double mEnergyCutLow =    { 40 * keV };
+        G4double mEnergyCutHigh =   { 70 * keV };
+
+        G4bool mUsenTOFDistribution = { false };
+        G4bool mUseUniformDistribution = { false };
+
+        G4bool mUsenTOFBeamProfile = { false };
+        G4bool mUsenTOFTOF = { false };
         
-        std::vector<PrimaryGeneration> mPrimaries;
+        TH1D* mnTOFTOFDistribution = {0};
+        TH2D* mnTOFBeamProfile = {0};
+        TH2D* mnTOFTOF = {0};
+
+        TRandom3* mTRandom3 = {0};
+
+        YAML::Node mConfig;
     };
 }

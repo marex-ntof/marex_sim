@@ -18,6 +18,7 @@ namespace marex
         DefineMaterials();
     }
 
+#ifdef MAREX_YAML
     DetectorConstruction::DetectorConstruction(YAML::Node config)
     : G4VUserDetectorConstruction()
     , mConfig(config)
@@ -28,12 +29,17 @@ namespace marex
         if(mConfig["hall"]["world_y"])          { mExperimentalHallY = mConfig["hall"]["world_y"].as<G4double>() * m; }
         if(mConfig["hall"]["world_z"])          { mExperimentalHallZ = mConfig["hall"]["world_z"].as<G4double>() * m; }
 
-        // mTarget = Target(config);
-        // mDICER = DICER(config);
-        // mnTOF = nTOF(config);
+        mTarget = Target(config);
+        mMArEXTarget = MArEXTarget(config);
+        mFilters = Filters(config);
+        mnTOF = nTOF(config);
+
+        mSimpleDetector = SimpleDetector(config);
+        mLiGDetector = LiGDetector(config);
 
         DefineMaterials();
     }
+#endif
 
     void DetectorConstruction::DefineMaterials()
     {
@@ -69,18 +75,27 @@ namespace marex
             0
         );
 
-        // if(mConfig["dicer"]) {
-        //     mDICER.Construct(mLogicalExperimentalHall);
-        // }
-        // else {
-        //     mnTOF.Construct(mLogicalExperimentalHall);
-        // }
+        if(mConfig["filters"]) {
+            mFilters.Construct(mLogicalExperimentalHall);
+        }
 
-        // mTarget.Construct(mLogicalExperimentalHall);
+        mnTOF.Construct(mLogicalExperimentalHall);
 
-        // if(mConfig["detector"]["detector_type"].as<std::string>() == "simple") {
-        //     mSimpleDetector.Construct(mLogicalExperimentalHall);
-        // }
+        if(mConfig["MArEX_target"])
+        {
+            mMArEXTarget.Construct(mLogicalExperimentalHall);
+        } else {
+            mTarget.Construct(mLogicalExperimentalHall);
+        }
+
+        if(mConfig["detector"]["detector_type"].as<std::string>() == "simple") {
+            mSimpleDetector.Construct(mLogicalExperimentalHall);
+        }
+        else if (mConfig["detector"]["detector_type"].as<std::string>() == "LiG")
+        {
+            mLiGDetector.Construct(mLogicalExperimentalHall);
+        }
+        
 
         return mPhysicalExperimentalHall;
     }

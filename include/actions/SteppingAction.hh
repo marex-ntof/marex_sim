@@ -15,7 +15,7 @@
 
 #include "EventManager.hh"
 
-namespace Artie
+namespace marex
 {
     class SteppingAction : public G4UserSteppingAction
     {

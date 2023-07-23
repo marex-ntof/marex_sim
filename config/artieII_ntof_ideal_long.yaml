@@ -1,0 +1,194 @@
+# ARTIE manager parameters
+manager:
+    number_of_threads:  6
+    number_of_runs:     1
+    number_of_events:   100000
+    seed:               10942
+    mode:               "interactive"   # interactive/run
+    detector:           "artieII_dicer"
+    output_filename:    "ntof_ideal_long_interactive"
+    save_particle_maps: true
+    save_primary_info:  true
+    save_particle_info: true
+    save_energy_deposits: true
+    save_hits:          true
+    save_neutron_data:  true
+    save_profile_data:  true
+    save_non_detected_neutrons: false
+
+# analysis parameters
+analysis:
+    N_x: 8
+    N_y: 8
+    N_z: 15
+    background_neutrons:  200
+    distribution_type:    "Uniform"
+
+# physics lists
+physics:
+  register_em_standard:         true
+  register_em_extra:            true
+  register_optical:             true
+  register_decay:               true
+  register_radioactive_decay:   true
+  register_stopping:            true
+  register_ion:                 true
+  register_hadron_elastic_hp:   false
+  register_hadron_qgsp_bert_hp: false
+  register_step_limiter:        true
+  register_fast_simulation:     false
+  register_lar_scintillation:   false
+  register_neutron_hp:          true
+
+  scintillation:
+    track_optical_photons:      false
+    track_thermal_electrons:    false
+
+  neutron:
+    skip_missing_isotopes:      true
+    do_not_adjust_final_state:  true
+    use_only_photo_evaporation: true
+    neglect_doppler:            true
+    produce_fission_fragments:  true
+    use_wendt_fission_model:    true
+    use_nresp71_model:          true
+
+# argon parameters 
+argon:
+    use_g4_definition:  false
+    argon_36_ratio:     0.334   # %
+    argon_38_ratio:     0.063   # %
+    argon_40_ratio:     99.603  # %
+    lar_density:        1.3954  # g/cm^3
+    lar_temperature:    85.0    # K
+    lar_pressure:       0.952   # atm
+
+# generator parameters
+generator:
+    energy_cut_low:         20      # keV
+    energy_cut_high:        200     # keV
+    t_zero_location:        0  # m -200.0 
+
+    energy_distribution:
+        distribution_type:  "uniform"      # "lanl", "ntof", "uniform"
+        distribution_file:  "data/resolution13a.root"
+        distribution_name:  "tally5"
+
+    beam_profile:
+        profile_type:   "ntof"      # "lanl", "ntof", "none"
+        profile_file:   "data/Profile_188m.root"
+        profile_name:   "histfluka"
+        
+    time_of_flight:
+        tof_type:       "ntof"
+        tof_file:       "data/RF.root"
+        tof_name:       "histfluka"   
+
+# ARTIE-I target parameters
+target:
+    active_volume_material: "liquid_argon"
+    target_radius:          0.5    # cm
+    target_length:          199.9996      # cm
+
+    target_entrance:	16.0 # m
+    target_x:	2.475 # cm
+    target_y:	0.0 # cm
+
+    construct_container:    true
+    container_outer_material:   "stainless_steel"
+    container_inner_material:   "high_vacuum"
+    container_outer_radius: 12.7 # cm
+    container_inner_radius: 12.2225 # cm
+    container_length:       204.693 # cm
+
+    construct_annulus:          true
+    annulus_inner_material:     "liquid_argon"
+    annulus_container_material: "stainless_steel"
+    annulus_inner_radius:       10.16 # cm
+    annulus_container_radius:   9.8552 # cm
+    annulus_length:             139.21 # cm
+    annulus_face_thickness:     0.3302 # cm
+
+    construct_active_volume_container:    true    # bool
+    active_volume_container_material:     "stainless_steel"
+    active_volume_container_radius:       1.5875   # cm
+
+    construct_inner_flange_left_side:   true
+    inner_flange_left_side_material:    "aluminum"
+    inner_flange_left_side_radius:      9.8552 #cm
+    inner_flange_left_side_thickness:   0.20066 # cm
+
+    construct_inner_flange_right_side:  true
+    inner_flange_right_side_material:   "aluminum"
+    inner_flange_right_side_radius:     9.8552 #cm
+    inner_flange_right_side_thickness:  0.20066 # cm
+
+    construct_inner_flange_left_side_gap:   true
+    inner_flange_left_side_gap_material:    "high_vacuum"
+    inner_flange_left_side_gap_thickness:   1.87706 # cm
+
+    construct_inner_flange_right_side_gap:  true
+    inner_flange_right_side_gap_material:   "high_vacuum"
+    inner_flange_right_side_gap_thickness:  1.87706 # cm
+
+    construct_outer_flange_left_side:   true
+    outer_flange_left_side_material:    "aluminum"
+    outer_flange_left_side_radius:      12.7 #cm
+    outer_flange_left_side_thickness:   0.20066 # cm
+
+    construct_outer_flange_right_side:  true
+    outer_flange_right_side_material:   "aluminum"
+    outer_flange_right_side_radius:     12.7 #cm
+    outer_flange_right_side_thickness:  0.20066 # cm
+
+# ARTIE Filters
+filters:
+    construct_filters:  true                 #bool
+    filter_materials:   ["aluminum", "aluminum", "aluminum", "aluminum"] #, "aluminum", "aluminum", "aluminum", "aluminum"
+    filter_x_position:  [2.475, -2.475, 2.475, -2.475] #, 2.475, -2.475, 2.475, -2.475
+    filter_z_position:  [15.5, 15.5, 15.55, 15.55]  # m #, 15.6, 15.6, 15.65, 15.65
+    filter_thickness:   [2.54, 2.54, 2.54, 2.54]  # cm # , 2.54, 2.54, 2.54, 2.54
+    filter_radius:      [4.0, 4.0, 4.0, 4.0] # cm #, 4.0, 4.0, 4.0, 4.0
+
+ntof:
+    construct_ppac: true
+    construct_fic1: true
+    fic1_width:         490 # mm
+    fic1_pipe_radius:   110 # mm
+    fic1_flange_thickness:  35  # mm
+
+hall:
+    # construct_beam_pipe:    true    # bool
+    # beam_pipe_material:     "rough_vacuum"
+    # beam_material:          "high_vacuum"
+    # beam_pipe_inner_radius: 18.0    # cm
+    # beam_pipe_outer_radius: 20.0    # cm
+    # gap:                    2.5     # m
+    # construct_hall:         true    # bool
+    # hall_material:          "concrete"
+    world_x:                4       # m                 
+    world_y:                4       # m
+    world_z:                195     # m
+    world_material:         "high_vacuum"
+    # wall_thickness:         1.0     # m
+
+# ARTIE-II detector
+detector:
+    detector_type:          "simple"
+    construct_detector:     true    # bool
+    detector_material:      "water"
+    detector_radius:        2.0 # cm
+    detector_length:        50.0 # cm
+    detector_separation:    6.0 # cm
+    detector_entrance:      188.0 # m
+
+    
+# neutron HP parameters
+# neutron:
+#     skip_missing_isotopes:      true
+#     do_not_adjust_final_state:  true
+#     use_only_photo_evaporation: true
+#     neglect_doppler:            true
+#     produce_fission_fragments:  true
+#     use_wendt_fission_model:    true
+#     use_nresp71_model:          true

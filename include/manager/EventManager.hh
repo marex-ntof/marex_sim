@@ -23,7 +23,7 @@
 #include "G4VModularPhysicsList.hh"
 #include "G4GDMLParser.hh"
 
-#ifdef ARTIE_ROOT
+#ifdef MAREX_ROOT
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -32,13 +32,13 @@
 #include "TCanvas.h"
 #endif
 
-#ifdef ARTIE_GEANT_10
+#ifdef MAREX_GEANT_10
 #include "g4root.hh"
 #else
 #include "G4AnalysisManager.hh"
 #endif
 
-#ifdef ARTIE_YAML
+#ifdef MAREX_YAML
 #include "yaml-cpp/yaml.h"
 #endif
 
@@ -48,12 +48,11 @@
 #include "Profile.hh"
 #include "Particle.hh"
 #include "EnergyDeposit.hh"
-#include "Analysis.hh"
 #include "bkgdAnalysis.hh"
 
 class PhysicsList;
 
-namespace Artie
+namespace marex
 {
     struct Tuple
     {
@@ -63,7 +62,7 @@ namespace Artie
         : name(n), index(i)
         {}
     };
-#ifdef ARTIE_PROFILING
+#ifdef MAREX_PROFILING
     struct Profile
     {
         G4int calls = 0;
@@ -86,7 +85,7 @@ namespace Artie
         ~EventManager();
 
 		static void SetParticle(G4String);
-#ifdef ARTIE_YAML
+#ifdef MAREX_YAML
         static void SetConfig(YAML::Node config);
 #endif
 
@@ -193,7 +192,7 @@ namespace Artie
 
         // lanl distribution
         void ConstructEnergyDistribution();
-#ifdef ARTIE_ROOT
+#ifdef MAREX_ROOT
         TH1D* GetLANLEnergyDistribution()       { return mLANLEnergyDistribution.get(); }
         TH1D* GetLANLTOFHist(G4int ii)          { return mLANLTOFHists[ii].get(); }
         TH2D* GetLANLBeamProfile()              { return mLANLBeamProfile.get(); }
@@ -351,7 +350,7 @@ namespace Artie
 
         void SaveGDML();
 
-#ifdef ARTIE_PROFILING
+#ifdef MAREX_PROFILING
         std::map<G4String, Profile> GetFunctionProfiles()     { return sFunctionProfiles; }
         inline void EndFunctionProfile(G4String func)   { 
             sFunctionProfiles[func].calls += 1; 
@@ -497,7 +496,7 @@ namespace Artie
         inline static G4bool mSavedParameters = {false};
         inline static YAML::Node mConfig;    
 
-#ifdef ARTIE_PROFILING
+#ifdef MAREX_PROFILING
         inline static thread_local std::map<G4String, Profile> sFunctionProfiles = {};
         inline static thread_local std::vector<G4int> sProfilingTime = {};
 #endif

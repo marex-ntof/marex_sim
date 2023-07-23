@@ -21,9 +21,8 @@
 #include "G4Types.hh"
 #include "G4GDMLParser.hh"
 
-#include "Analysis.hh"
-#include "MArEXActionInitialization.hh"
-#include "MArEXDetectorConstruction.hh"
+#include "ActionInitialization.hh"
+#include "DetectorConstruction.hh"
 #include "Core.hh"
 #include "EventManager.hh"
 #include "PhysicsList.hh"
@@ -120,7 +119,7 @@ int main(int argc, char** argv)
         VisManager->Initialize();
         RunManager->Initialize();
         G4UImanager* UIManager = G4UImanager::GetUIpointer();
-#ifdef ARTIE_USE_UI_TCSH
+#ifdef MAREX_USE_UI_TCSH
         auto UITerminal = std::make_shared<G4UIterminal>(new G4UItcsh);
 #else   
         auto UITerminal = std::make_shared<G4UIterminal>();

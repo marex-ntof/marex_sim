@@ -17,7 +17,7 @@
 
 #include "Trajectory.hh"
 
-namespace Artie
+namespace marex
 {
     class Particle
     {

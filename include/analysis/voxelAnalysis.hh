@@ -9,7 +9,7 @@
 #pragma once
 #include "EventManager.hh"
 
-namespace Artie
+namespace marex
 {
     struct AnalysisTuple
     {

@@ -24,13 +24,12 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4VProcess.hh"
 
-#ifdef ARTIE_YAML
+#ifdef MAREX_YAML
 #include "yaml-cpp/yaml.h"
 #endif
 
-namespace Artie
+namespace marex
 {
-
     inline G4double NeutronMassSI()    { return 1.674927498e-27 * kg; }
     inline G4double NeutronMassMeV()   { return 939.56542052 * MeV; }
     inline G4double keVToJoules(G4double energy) { return energy * 1.60218e-16; }
@@ -158,7 +157,7 @@ namespace Artie
     G4String GetPostProcessName(const G4Step* step);
     G4String GetVolumeMaterialName(const G4Step* step);
 
-#ifdef ARTIE_YAML
+#ifdef MAREX_YAML
     class ConfigParser
     {
     public:

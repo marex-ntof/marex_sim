@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 20)
 add_definitions(-w)
 
-project(MArEX)
+project(MAREX)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -43,33 +43,51 @@ endif()
 
 ##############################################################
 # Geant version
-message(STATUS "Compiling against Geant4 version 11.")
-find_package(Geant4 11 REQUIRED ui_all vis_all)
-include(${Geant4_USE_FILE})
+option(GEANT4_10 "Compile with Geant4 version 10" OFF)
+if(GEANT4_10)
+    add_definitions(-DMAREX_GEANT_10)
+    message(STATUS "Compiling against Geant4 version 10.")
+    find_package(Geant4 10.07.02 EXACT REQUIRED ui_all vis_all)
+    include(${Geant4_USE_FILE})
+else()
+    message(STATUS "Compiling against Geant4 version 11.")
+    find_package(Geant4 11 REQUIRED ui_all vis_all)
+    include(${Geant4_USE_FILE})
+endif()
 message(STATUS "Geant4 installation directory -- ${Geant4_DIR}")
 ##############################################################
 
 ##############################################################
-# ROOT
-message(STATUS "Compiling with ROOT.")
-find_package(ROOT 6.26 CONFIG REQUIRED COMPONENTS Core)
-message(STATUS "ROOT installation directory -- ${ROOT_DIR}")
-message(STATUS "ROOT include directories -- ${ROOT_INCLUDE_DIRS}")
-add_definitions(-DMAREX_ROOT)
+# Whether to use ROOT for old ARTIE-I distribution
+option(USE_ROOT "Use ROOT for marex analysis" OFF)
+if(USE_ROOT)
+    message(STATUS "Compiling with ROOT.")
+    find_package(ROOT 6.26 CONFIG REQUIRED COMPONENTS Core)
+    message(STATUS "ROOT installation directory -- ${ROOT_DIR}")
+    message(STATUS "ROOT include directories -- ${ROOT_INCLUDE_DIRS}")
+    #message("ROOT Libraries: ${ROOT_LIBRARIES}")
+    add_definitions(-DMAREX_ROOT)
+endif()
 ##############################################################
 
 ##############################################################
-# YAML
-message(STATUS "Compiling with yaml-cpp.")
-add_definitions(-DMAREX_YAML)
-set(YAML_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/vendor/yaml-cpp/include)
-add_subdirectory(${PROJECT_SOURCE_DIR}/vendor/yaml-cpp)
-set(YAML_LIBS yaml-cpp)
+# Whether to use yaml-cpp
+option(USE_YAML "Use YAML for configuration files" ON)
+if(USE_YAML)
+    message(STATUS "Compiling with yaml-cpp.")
+    add_definitions(-DMAREX_YAML)
+    set(YAML_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/vendor/yaml-cpp/include)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/vendor/yaml-cpp)
+    set(YAML_LIBS yaml-cpp)
+else()
+    set(YAML_INCLUDE_DIR "")
+    set(YAML_LIBS "")
+endif()
 ##############################################################
 
 ##############################################################
 # use the visualization manager
-option(USE_VIS "Whether to use the visualization." ON)
+option(USE_VIS "Whether to use the visualization." OFF)
 if(USE_VIS)
     add_definitions(-DMAREX_USE_VIS)
     message(STATUS "Compiling with the visualization enabled.")
@@ -78,7 +96,7 @@ endif()
 
 ##############################################################
 # use the ui executive/manager
-option(USE_UI "Whether to use the ui interface." ON)
+option(USE_UI "Whether to use the ui interface." OFF)
 if(USE_UI)
     add_definitions(-DMAREX_USE_UI)
     message(STATUS "Compiling with the ui enabled.")
@@ -135,10 +153,10 @@ endif()
 
 ##############################################################
 # create programs
-add_executable(marex_sim 
+add_executable(marex_run 
     src/programs/marex.cc 
 )
-target_link_libraries(marex_sim marex)
+target_link_libraries(marex_run marex)
 ##############################################################
 
 ##############################################################
@@ -172,5 +190,5 @@ file(COPY ${CONFIG_FILES} DESTINATION ${PROJECT_BINARY_DIR}/configs/)
 ##############################################################
 
 ##############################################################
-add_custom_target(MArEX DEPENDS marex)
+add_custom_target(MAREX DEPENDS marex)
 ##############################################################

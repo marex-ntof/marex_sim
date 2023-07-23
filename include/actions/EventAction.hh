@@ -11,7 +11,7 @@
 #include "globals.hh"
 #include "G4UserEventAction.hh"
 #include "G4Event.hh"
-#ifdef ARTIE_GEANT_10
+#ifdef MAREX_GEANT_10
 #include "g4root.hh"
 #else
 #include "G4AnalysisManager.hh"
@@ -21,7 +21,7 @@
 #include "RunAction.hh"
 #include "EventManager.hh"
 
-namespace Artie
+namespace marex
 {
     class EventAction : public G4UserEventAction
     {

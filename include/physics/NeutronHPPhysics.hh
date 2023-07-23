@@ -16,7 +16,7 @@
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4HadronElasticProcess.hh"
 
-#ifdef ARTIE_GEANT_10
+#ifdef MAREX_GEANT_10
 #include "G4HadronFissionProcess.hh"
 #include "G4HadronCaptureProcess.hh"
 #else
@@ -46,7 +46,7 @@
 
 // #include "Argon.hh"
 
-namespace Artie
+namespace marex
 {
     class NeutronHPPhysics : public G4VPhysicsConstructor
     {
