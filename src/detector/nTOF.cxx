@@ -29,8 +29,11 @@ namespace marex
         if(mConfig["nTOF"]["beam_material"])            { mBeamPipeVacuumMaterialName = mConfig["nTOF"]["beam_material"].as<std::string>(); }
         if(mConfig["nTOF"]["beam_pipe_material"])       { mBeamPipePipeMaterialName = mConfig["nTOF"]["beam_pipe_material"].as<std::string>(); }
         if(mConfig["nTOF"]["beam_pipe_entrance"])       { mBeamPipeEntrance = mConfig["nTOF"]["beam_pipe_entrance"].as<G4double>() * m; }
-        if(mConfig["nTOF"]["beam_pipe_middle_z_start"]) { mBeamPipeMidZStart = mConfig["nTOF"]["beam_pipe_middle_z_start"].as<G4double>() * m; }
-        if(mConfig["nTOF"]["beam_pipe_middle_z_end"])   { mBeamPipeMidZEnd = mConfig["nTOF"]["beam_pipe_middle_z_end"].as<G4double>() * m; }
+
+        if(mConfig["nTOF"]["beam_pipe_middle_z_start"])        { mBeamPipeMidZStart = mConfig["nTOF"]["beam_pipe_middle_z_start"].as<G4double>() * m; }
+        if(mConfig["nTOF"]["beam_pipe_middle_z_end"])          { mBeamPipeMidZEnd = mConfig["nTOF"]["beam_pipe_middle_z_end"].as<G4double>() * m; }
+        if(mConfig["nTOF"]["beam_pipe_middle_inner_radius"])   { mBeamPipeMidInnerRadius = mConfig["nTOF"]["beam_pipe_middle_inner_radius"].as<G4double>() * cm; }
+        if(mConfig["nTOF"]["beam_pipe_middle_outer_radius"])   { mBeamPipeMidOuterRadius = mConfig["nTOF"]["beam_pipe_middle_outer_radius"].as<G4double>() * cm; }
 
         if(mConfig["hall"]["construct_hall"])           { mConstructHall = mConfig["hall"]["construct_hall"].as<G4bool>(); }
         if(mConfig["hall"]["hall_material"])            { mHallMaterialName = mConfig["hall"]["hall_material"].as<std::string>(); }
@@ -41,7 +44,8 @@ namespace marex
 
         if(mConfig["hall"]["construct_detector_wall"])  { mConstructDetectorWall = mConfig["hall"]["construct_detector_wall"].as<G4bool>(); }
         if(mConfig["hall"]["detector_wall_thickness"])  { mDetectorWallThickness = mConfig["hall"]["detector_wall_thickness"].as<G4double>() * m; }
-        if(mConfig["hall"]["detector_wall_z"])          { mDetectorWallZ = mConfig["hall"]["detector_wall_z"].as<G4double>() * m; }
+        if(mConfig["hall"]["detector_wall_z"])          { mDetectorWallZ = mConfig["hall"]["detector_wall_z"].as<G4double>() * m; } 
+        if(mConfig["hall"]["detector_wall_hole_dia"])   { mDetectorWallHoleDia = mConfig["hall"]["detector_wall_hole_dia"].as<G4double>() * cm; }
 
         if(mConfig["collimators"]["construct_collimator_upstream"])     { mConstructUpCollimator = mConfig["collimators"]["construct_collimator_upstream"].as<G4bool>(); }
         if(mConfig["collimators"]["collimator_upstream_length"])        { mUpCollimatorLength = mConfig["collimators"]["collimator_upstream_length"].as<G4double>() * cm; }
@@ -57,6 +61,10 @@ namespace marex
         if(mConfig["collimators"]["collimator_downstream_z"])           { mDownCollimatorZ = mConfig["collimators"]["collimator_downstream_z"].as<G4double>() * m; }
         if(mConfig["collimators"]["collimator_downstream_material"])    { mDownCollimatorMaterialName = mConfig["collimators"]["collimator_downstream_material"].as<std::string>(); }
 
+        if(mConfig["collimators"]["construct_boratedPE"])   { mConstructBoratedPE = mConfig["collimators"]["construct_boratedPE"].as<G4bool>(); }
+        if(mConfig["collimators"]["boratedPE_length"])      { mBoratedPELength = mConfig["collimators"]["boratedPE_length"].as<G4double>() * cm; }
+        if(mConfig["collimators"]["boratedPE_material"])    { mBoratedPEMaterialName = mConfig["collimators"]["boratedPE_material"].as<std::string>(); }
+
         // if(mConfig["hall"]["world_material"])           { mWorldMaterialName = mConfig["hall"]["world_material"].as<std::string>(); }
         // if(mConfig["generator"]["t_zero_location"])     { mTZeroLocation = mConfig["generator"]["t_zero_location"].as<G4double>() * m;}
 
@@ -71,6 +79,7 @@ namespace marex
         mHallMaterial = CreateMaterial(mHallMaterialName, "Hall");
         mUpCollimatorMaterial = CreateMaterial(mUpCollimatorMaterialName, "UpCollimator");
         mDownCollimatorMaterial = CreateMaterial(mDownCollimatorMaterialName, "DownCollimator");
+        mBoratedPEMaterial = CreateMaterial(mBoratedPEMaterialName, "BoratedPE");
     }
 
     nTOF::~nTOF()
@@ -144,7 +153,7 @@ namespace marex
             G4Tubs* WallHole = new G4Tubs(
                 "Solid_DetectorWall_WallHole",
                 0,
-                mBeamPipeOuterRadius,
+                mDetectorWallHoleDia / 2.0,
                 mDetectorWallThickness / 2.0,
                 0,
                 2*M_PI
@@ -245,7 +254,7 @@ namespace marex
             mSolidBeamPipeMidVacuum = new G4Tubs(
                 "Solid_MArEXBeamPipeMidVacuum", 
                 0,
-                mBeamPipeInnerRadius, 
+                mBeamPipeMidInnerRadius, 
                 0.5 * mBeamPipeMidLength, 
                 0,
                 2*M_PI
@@ -269,8 +278,8 @@ namespace marex
             // Beam Pipe 
             mSolidBeamPipeMidPipe = new G4Tubs(
                 "Solid_MArEXBeamPipeMidPipe", 
-                mBeamPipeInnerRadius,
-                mBeamPipeOuterRadius, 
+                mBeamPipeMidInnerRadius,
+                mBeamPipeMidOuterRadius, 
                 0.5 * mBeamPipeMidLength, 
                 0,
                 2*M_PI
@@ -282,7 +291,7 @@ namespace marex
             );
             mPhysicalBeamPipeMidPipe = new G4PVPlacement(
                 0, 
-                mBeamPipePosition,
+                mBeamPipeMidPosition,
                 mLogicalBeamPipeMidPipe, 
                 "Physical_MArEXBeamPipeMidPipe", 
                 logicalWorld, 
@@ -356,6 +365,41 @@ namespace marex
                 mDownCollimatorPosition,
                 mLogicalDownCollimator, 
                 "Physical_MArEXDownCollimator", 
+                logicalWorld, 
+                false, 
+                0, 
+                true
+            );
+        }
+
+        if(mConstructBoratedPE)
+        {
+            mBoratedPEPosition = {
+                0.,
+                0.,
+                (mDownCollimatorZ + mDownCollimatorLength + mBoratedPELength * 0.5)
+            };
+
+            mSolidBoratedPE = new G4Tubs(
+                "Solid_MArEXBoratedPE", 
+                mDownCollimatorHoleDia / 2.0,
+                mDownCollimatorRadius, 
+                mBoratedPELength / 2.0, 
+                0,
+                2*M_PI
+            );
+
+            mLogicalBoratedPE = new G4LogicalVolume(
+                mSolidBoratedPE, 
+                mBoratedPEMaterial, 
+                "Logical_MArEXBoratedPE"
+            );
+
+            mPhysicalBoratedPE = new G4PVPlacement(
+                0, 
+                mBoratedPEPosition,
+                mLogicalBoratedPE, 
+                "Physical_MArEXBoratedPE", 
                 logicalWorld, 
                 false, 
                 0, 

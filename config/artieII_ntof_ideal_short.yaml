@@ -2,11 +2,11 @@
 manager:
     number_of_threads:  6
     number_of_runs:     1
-    number_of_events:   3000000
+    number_of_events:   10
     seed:               924835098
-    mode:               "interactive"   # interactive/run
+    mode:               "run"   # interactive/run
     detector:           "artieII"
-    output_filename:    "ntof_test" # "ntof_gasAr_brassCol_20cm_5mm_uniformE" # ntof_uniformBkgd_3milevts_5cmFilter_out
+    output_filename:    "ntof_test" # ntof_3milevts_gasAr_filter_out # "ntof_gasAr_brassCol_20cm_5mm_uniformE" # ntof_uniformBkgd_3milevts_5cmFilter_out
     save_particle_maps: true
     save_primary_info:  true
     save_particle_info: true
@@ -21,7 +21,7 @@ analysis:
     N_x: 8
     N_y: 8
     N_z: 15
-    background_neutrons:  30000
+    background_neutrons:  6
     distribution_type:    "Uniform"
 
 # physics lists
@@ -69,37 +69,55 @@ argon:
 generator:
     energy_cut_low:         0.000001      # keV
     energy_cut_high:        20000 # 1000000.0     # keV
-    t_zero_location:        0  # m -200.0 
+    tof_cut_low:            0 #ns or power
+    tof_cut_high:           1000000 #ns or power
+    tof_power_low:          1
+    tof_power_high:         6
+    t_zero_location:        0  # m -200.0
+
+    distribution_type:      "energy" # "tof"
 
     energy_distribution:
-        distribution_type:  "uniform_energy"      # "lanl", "ntof", "uniform_tof", "uniform_energy"
+        distribution_type:  "uniform"      # "ntof", "uniform"
+        distribution_file:  "data/evalflux.root"
+        distribution_name:  "hEval_Abs"
+
+    tof_distribution:
+        distribution_type:  "uniform"      # "ntof", "uniform", "uniform_log"
         distribution_file:  "data/Neutron_Gamma_Flux_1cmColli_188m.root"
         distribution_name:  "histfluka"
 
     beam_profile:
-        profile_type:   "ntof"      # "lanl", "ntof", "none"
+        profile_type:   "gaussian"      # "ntof", "delta", "gaussian", "uniform"
         profile_file:   "data/gausProfile.root" # "data/Profile_188m.root" # 
         profile_name:   "ProfileHist2D" # "histfluka" # 
+        profile_sigma:  47 #mm
+        profile_radius: 10 #mm
         
-    time_of_flight:
-        tof_type:       "ntof"
+    moderator_distribution:
+        tof_type:       "ntof" # "none",
         tof_file:       "data/RF.root"
         tof_name:       "histfluka"
+
+    momentum_distribution:
+        dist_type:      "none" # "uniform"
 
 nTOF:
     construct_beam_pipe:    true    # bool
     beam_pipe_material:     "stainless_steel"   #rough_vacuum
     beam_material:          "high_vacuum"
-    beam_pipe_inner_radius: 8.0    # cm
-    beam_pipe_outer_radius: 10.0    # cm
-    beam_pipe_length:       183.5 # m
-    beam_pipe_entrance:     0.0  # m
+    beam_pipe_inner_radius: 12.5    # cm
+    beam_pipe_outer_radius: 15.0    # cm
+    beam_pipe_length:       170     # m
+    beam_pipe_entrance:     0.0     # m
 
-    beam_pipe_middle_z_start: 186.0 # m
-    beam_pipe_middle_z_end: 195.5 # m
+    beam_pipe_middle_z_start: 176.0 # m
+    beam_pipe_middle_z_end: 178.88 # m
+    beam_pipe_middle_inner_radius: 5.0    # cm
+    beam_pipe_middle_outer_radius: 9.75    # cm
 
 collimators:
-    construct_collimator_upstream:  true
+    construct_collimator_upstream:  false
     collimator_upstream_length:     20.0 # cm
     collimator_upstream_radius:     5.0 # cm
     collimator_upstream_hole_dia:   5.0 # mm
@@ -107,18 +125,23 @@ collimators:
     collimator_upstream_material:   "brass"
 
     construct_collimator_downstream:  true
-    collimator_downstream_length:     20.0 # cm
-    collimator_downstream_radius:     5.0 # cm
-    collimator_downstream_hole_dia:   5.0 # mm
-    collimator_downstream_z:          185.0 # m
-    collimator_downstream_material:   "brass"
+    collimator_downstream_length:     135.0 # cm
+    collimator_downstream_radius:     17.5 # cm
+    collimator_downstream_hole_dia:   18.0 # mm
+    collimator_downstream_z:          174.0 # m
+    collimator_downstream_material:   "stainless_steel"
+
+    construct_boratedPE:    true
+    boratedPE_length:       50.0 #cm
+    boratedPE_material:     "borated_polyethylene"
     
 MArEX_target:
-    active_volume_material: "gaseous_argon_300bar"
+    active_volume_material: "gaseous_argon"
+    gas_pressure:           300 #bar
     target_radius:          9.0    # cm
-    # target_length:          49.0   # cm
-
-    target_entrance:	184.25 # m
+    # target_length:          70.0   # cm
+    # target_entrance:        184.25 # m
+    target_placement:   173.0 #m
     target_x:	0.0 # cm
     target_y:	0.0 # cm
 
@@ -131,12 +154,12 @@ MArEX_target:
 
 # Filters
 filters:
-    construct_filters:  false              #bool
-    filter_materials:   ["aluminum", "aluminum"] #, "aluminum", "aluminum", "aluminum", "aluminum"
-    filter_x_position:  [0, 0] #, 2.475, -2.475, 2.475, -2.475
-    filter_z_position:  [185.5, 185.55]  # m #, 15.6, 15.6, 15.65, 15.65
-    filter_thickness:   [2.54, 2.54]  # cm #, 2.54, 2.54, 2.54, 2.54
-    filter_radius:      [4.0, 4.0] # cm #, 4.0, 4.0, 4.0, 4.0
+    construct_filters:  false        #bool
+    filter_materials:   ["aluminum"] #, "aluminum", "aluminum", "aluminum", "aluminum"
+    filter_x_position:  [0] #, 2.475, -2.475, 2.475, -2.475
+    filter_z_position:  [172]  # m #, 15.6, 15.6, 15.65, 15.65
+    filter_thickness:   [8]  # cm #, 2.54, 2.54, 2.54, 2.54
+    filter_radius:      [12.5] # cm #, 4.0, 4.0, 4.0, 4.0
 
 hall:
     # gap:                    2.5     # m
@@ -153,15 +176,16 @@ hall:
     hall_thickness:         0.5     # m
 
     construct_detector_wall:    true
-    detector_wall_thickness:    1.6 # m
-    detector_wall_z:            189.0 # m
+    detector_wall_thickness:    3.2 # m
+    detector_wall_z:            176.0 # m
+    detector_wall_hole_dia:     20.0 #cm
 
 # ARTIE-II detector
 detector:
     construct_detector:     true    # bool
     detector_type:          "LiG"
     detector_material:      "lithium_glass"
-    detector_entrance:      196.0 # m
+    detector_entrance:      184.0 # m
     ### Uncomment which ever det type you need
     disk:
         detector_radius:    10.0 # cm

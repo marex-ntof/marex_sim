@@ -17,7 +17,8 @@ namespace marex
     struct bkgdAnalysisTuple
     {
         G4double n_energy = 0;
-        G4double n_energy_detected = 0;
+        G4bool detectionStatus = false;
+        // G4double n_energy_detected = 0;
         G4double n_tof_bkgd = 0;
     };
 

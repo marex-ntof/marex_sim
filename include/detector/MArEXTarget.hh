@@ -64,10 +64,11 @@ namespace marex
         G4String mWorldMaterialName = {"high_vacuum"};
 
         // main target volume
-        G4double mTargetEntrance = {16.0 * m};
+        G4double mTargetPlacement = {16.0 * m};
         G4double mTargetX = {1.5 * cm};
         G4double mTargetY = {1.5 * cm};
         G4String mActiveVolumeMaterialName = {"liquid_argon"};
+        G4double mGasPressure = {0};
         G4double mTargetRadius = {1.1049 * cm};
         G4double mTargetLength = {158.60268 * cm};
 

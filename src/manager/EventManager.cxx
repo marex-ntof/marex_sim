@@ -127,133 +127,201 @@ namespace marex
         mAnalysisRunEndFunctions.emplace_back(bkgdAnalysisFunctionRunEnd);
         mAnalysisEventBeginFunctions.emplace_back(bkgdAnalysisFunctionEventBegin);
         mAnalysisEventEndFunctions.emplace_back(bkgdAnalysisFunctionEventEnd);
+
+        ////////////////// Set up energy distributions
+        mEnergyCutLow = mConfig["generator"]["energy_cut_low"].as<G4double>() * keV;
+        mEnergyCutHigh = mConfig["generator"]["energy_cut_high"].as<G4double>() * keV;
         
-        if(mConfig["generator"]["energy_cut_low"])  { 
-            mEnergyCutLow = mConfig["generator"]["energy_cut_low"].as<G4double>() * keV; 
+        std::string energy_distribution_type = mConfig["generator"]["energy_distribution"]["distribution_type"].as<std::string>();
+        if(energy_distribution_type == "ntof")
+        {
+            mEnergyDistributionFileName = mConfig["generator"]["energy_distribution"]["distribution_file"].as<std::string>();
+            mEnergyDistributionName = mConfig["generator"]["energy_distribution"]["distribution_name"].as<std::string>();
+            mEnergyDistributionFile = new TFile(mEnergyDistributionFileName);
+
+            // Getting histogram from the canvas
+            TCanvas *c1 = (TCanvas*)mEnergyDistributionFile->Get("Canvas_1");
+            TH1D* h1 = (TH1D*)c1->GetPrimitive(mEnergyDistributionName);
+
+            G4int binLow = h1->GetXaxis()->FindBin(mEnergyCutLow);
+            G4int binHigh = h1->GetXaxis()->FindBin(mEnergyCutHigh);
+            G4int numBins = binHigh - binLow + 1;
+
+            mEnergyDistribution.reset(
+                new TH1D("h2", "Energy hist in the energy range", numBins, mEnergyCutLow, mEnergyCutHigh)
+            );
+
+            // Filling the Energy histogram
+            for (G4int i = 1; i < numBins + 1; i++)
+            {
+                mEnergyDistribution->SetBinContent(i, h1->GetBinContent(binLow + i - 1));
+            }
         }
-        if(mConfig["generator"]["energy_cut_high"]) { 
-            mEnergyCutHigh = mConfig["generator"]["energy_cut_high"].as<G4double>() * keV; 
+
+        if(energy_distribution_type == "uniform")
+        {
+            G4int numBins = 500;
+            mEnergyDistribution.reset(
+                new TH1D("h2", "Energy hist in the energy range", numBins, mEnergyCutLow, mEnergyCutHigh)
+            );
+
+            // Filling the Energy histogram
+            for (G4int i = 1; i < 1000000 + 1; i++)
+            {
+                mEnergyDistribution->Fill(mEnergyCutLow + (mEnergyCutHigh - mEnergyCutLow) * G4UniformRand());
+            }
         }
+
         if(mConfig["generator"]["t_zero_location"]) { 
             mTZeroLocation = mConfig["generator"]["t_zero_location"].as<G4double>() * m; 
         }
+        //////////////////
 
-        // Set up energy distributions
-        std::string distribution_type = mConfig["generator"]["energy_distribution"]["distribution_type"].as<std::string>();
-        if(distribution_type == "lanl") 
-        { 
-            mLANLEnergyDistributionFileName = mConfig["generator"]["energy_distribution"]["distribution_file"].as<std::string>();
-            G4cout << mLANLEnergyDistributionFileName << G4endl;
-            mLANLEnergyDistributionName = mConfig["generator"]["energy_distribution"]["distribution_name"].as<std::string>();
-            mLANLEnergyDistributionFile = new TFile(mLANLEnergyDistributionFileName);
-            TGraph *DistributionGraph = (TGraph*)mLANLEnergyDistributionFile->Get(mLANLEnergyDistributionName);
+        ////////////////// Set up TOF distributions
+        mTOFCutLow = mConfig["generator"]["tof_cut_low"].as<G4double>() * ns;
+        mTOFCutHigh = mConfig["generator"]["tof_cut_high"].as<G4double>() * ns;
 
-            // Make variable-bin histogram for beam energy
-            const G4int nlogbins=500;        
-            G4double xmin = 1.e-3;  //eV
-            G4double xmax = 1.e7;   //eV
-            G4double *xbins = new G4double[nlogbins+1];
-            G4double xlogmin = TMath::Log10(xmin);
-            G4double xlogmax = TMath::Log10(xmax);
-            G4double dlogx   = (xlogmax-xlogmin)/((G4double)nlogbins);
-            for (G4int i=0;i<=nlogbins;i++) 
-            {
-                G4double xlog = xlogmin+ i*dlogx;
-                xbins[i] = TMath::Exp( TMath::Log(10) * xlog ); 
-            }
-            mLANLEnergyDistribution.reset(
-                new TH1D("LANLBeamEnergy", "LANLBeamEnergy", nlogbins, xbins)
-            );
-            auto nPoints = DistributionGraph->GetN(); // number of points 
-            G4double x, y;
-            for(G4int i=0; i < nPoints; ++i) {
-                DistributionGraph->GetPoint(i, x, y); //eV
-                if( 
-                    x / 1000 > mEnergyCutLow && 
-                    x / 1000 < mEnergyCutHigh
-                ) 
-                {
-                    mLANLEnergyDistribution->Fill(x,y);
-                }
-            } 
-        }
-        if(distribution_type == "ntof")
+        mTOFPowerLow = mConfig["generator"]["tof_power_low"].as<G4int>();
+        mTOFPowerHigh = mConfig["generator"]["tof_power_high"].as<G4int>();
+            
+
+        std::string tof_distribution_type = mConfig["generator"]["tof_distribution"]["distribution_type"].as<std::string>();
+        if(tof_distribution_type == "ntof")
         {
-            mnTOFTOFDistributionFileName = mConfig["generator"]["energy_distribution"]["distribution_file"].as<std::string>();
-            G4cout << mnTOFTOFDistributionFileName << G4endl;
-            mnTOFTOFDistributionName = mConfig["generator"]["energy_distribution"]["distribution_name"].as<std::string>();
-            mnTOFTOFDistributionFile = new TFile(mnTOFTOFDistributionFileName);
+            mTOFDistributionFileName = mConfig["generator"]["tof_distribution"]["distribution_file"].as<std::string>();
+            mTOFDistributionName = mConfig["generator"]["tof_distribution"]["distribution_name"].as<std::string>();
+            mTOFDistributionFile = new TFile(mTOFDistributionFileName);
 
             // Getting histogram from the canvas
-            TCanvas *c1 = (TCanvas*)mnTOFTOFDistributionFile->Get("Canvas_1");
-            TH1D* h1 = (TH1D*)c1->GetPrimitive(mnTOFTOFDistributionName);
+            TCanvas *c1 = (TCanvas*)mTOFDistributionFile->Get("Canvas_1");
+            TH1D* h1 = (TH1D*)c1->GetPrimitive(mTOFDistributionName);
 
-            G4double tofLow = GetNominalTOF(mEnergyCutHigh);
-            G4double tofHigh = GetNominalTOF(mEnergyCutLow);
-
-            G4int binLow = h1->GetXaxis()->FindBin(tofLow);
-            G4int binHigh = h1->GetXaxis()->FindBin(tofHigh);
+            G4int binLow = h1->GetXaxis()->FindBin(mTOFCutLow);
+            G4int binHigh = h1->GetXaxis()->FindBin(mTOFCutHigh);
             G4int numBins = binHigh - binLow + 1;
 
-            mnTOFTOFDistribution.reset(
-                new TH1D("h2", "TOF hist in the energy range", numBins, tofLow, tofHigh)
+            mTOFDistribution.reset(
+                new TH1D("h2", "Energy hist in the energy range", numBins, mTOFCutLow, mTOFCutHigh)
             );
 
             // Filling the TOF histogram
             for (G4int i = 1; i < numBins + 1; i++)
             {
-                mnTOFTOFDistribution->SetBinContent(i, h1->GetBinContent(binLow + i - 1));
+                mTOFDistribution->SetBinContent(i, h1->GetBinContent(binLow + i - 1));
             }
         }
-        
-        std::string profile_type = mConfig["generator"]["beam_profile"]["profile_type"].as<std::string>();
-        if(profile_type == "lanl") 
+
+        if(tof_distribution_type == "uniform")
         {
+            G4int numBins = 500;
+            mTOFDistribution.reset(
+                new TH1D("h2", "TOF hist in the tof range", numBins, mTOFCutLow, mTOFCutHigh)
+            );
+
+            // Filling the TOF histogram
+            for (G4int i = 1; i < 1000000 + 1; i++)
+            {
+                mTOFDistribution->Fill(mTOFCutLow + (mTOFCutHigh - mTOFCutLow) * G4UniformRand());
+            }
         }
+
+        if(tof_distribution_type == "uniform_log")
+        {
+            G4int numBins = 500;
+            mTOFDistribution.reset(
+                new TH1D("h2", "TOF hist in the tof range", numBins, mTOFCutLow, mTOFCutHigh)
+            );
+
+            // Filling the TOF histogram
+            for (G4int i = 1; i < 1000000 + 1; i++)
+            {
+                mTOFDistribution->Fill(std::pow(10, int(mTOFPowerLow + (mTOFPowerHigh - mTOFPowerLow) * G4UniformRand())) * G4UniformRand());
+            }
+        }
+        //////////////////
+
+        ////////////////// Set up Beam Profile
+        mProfileRadius = mConfig["generator"]["beam_profile"]["profile_radius"].as<G4double>() * mm;
+        mProfileSigma = mConfig["generator"]["beam_profile"]["profile_sigma"].as<G4double>() * mm;
+            
+        std::string profile_type = mConfig["generator"]["beam_profile"]["profile_type"].as<std::string>();
         if(profile_type == "ntof") 
         {
-            mnTOFBeamProfileFileName = mConfig["generator"]["beam_profile"]["profile_file"].as<std::string>();
-            mnTOFBeamProfileName = mConfig["generator"]["beam_profile"]["profile_name"].as<std::string>();
-            mnTOFBeamProfileFile = new TFile(mnTOFBeamProfileFileName);
-            mnTOFBeamProfile.reset((TH2D*)mnTOFBeamProfileFile->Get(mnTOFBeamProfileName));
+            mBeamProfileFileName = mConfig["generator"]["beam_profile"]["profile_file"].as<std::string>();
+            mBeamProfileName = mConfig["generator"]["beam_profile"]["profile_name"].as<std::string>();
+            mBeamProfileFile = new TFile(mBeamProfileFileName);
+            mBeamProfile.reset((TH2D*)mBeamProfileFile->Get(mBeamProfileName));
         }
 
-        std::string tof_type = mConfig["generator"]["time_of_flight"]["tof_type"].as<std::string>();
-        if(tof_type == "lanl") 
+        if(profile_type == "gaussian")
         {
-            mLANLTOFFileName = mConfig["generator"]["time_of_flight"]["tof_file"].as<std::string>();
-            mLANLTOFName = mConfig["generator"]["time_of_flight"]["tof_name"].as<std::string>();
+            TRandom3* rand3 = new TRandom3();
 
-            mLANLTOFFile = new TFile(mLANLTOFFileName);
-            std::string histEnergies[7] = {
-                "1", "10", "100", "1000", "10000", "30000", "100000"
-            };
-            for (G4int i = 0; i < std::size(histEnergies); i++)
+            G4int numBins = 100;
+            mBeamProfile.reset(
+                new TH2D("h2", "Gaussian beam profile hist", numBins, - mProfileRadius, mProfileRadius, numBins, - mProfileRadius, mProfileRadius)
+            );
+
+            // Filling the beam profile histogram
+            for (G4int i = 1; i < 1000000 + 1; i++)
             {
-                std::string hist_name = "hist_" + histEnergies[i] + "ev";
-                TH1D *h1 = (TH1D*)mLANLTOFFile->Get(hist_name.c_str());
-                mLANLTOFHists.emplace_back(h1);
+                mBeamProfile->Fill(rand3->Gaus(0,mProfileSigma), rand3->Gaus(0,mProfileSigma));
             }
         }
-        if(tof_type == "ntof") 
+
+        if(profile_type == "uniform")
         {
-            mnTOFTOFFileName = mConfig["generator"]["time_of_flight"]["tof_file"].as<std::string>();
-            mnTOFTOFFile = new TFile(mnTOFTOFFileName);
+            TRandom3* rand3 = new TRandom3();
+            G4int numBins = 100;
+            mBeamProfile.reset(
+                new TH2D("h2", "Uniform beam profile hist", numBins, - mProfileRadius, mProfileRadius, numBins, - mProfileRadius, mProfileRadius)
+            );
+
+            // Filling the beam profile histogram
+            for (G4int i = 1; i < 1000000 + 1; i++)
+            {
+                mBeamProfile->Fill(rand3->Uniform(-mProfileRadius, mProfileRadius), rand3->Uniform(-mProfileRadius, mProfileRadius));
+            }
+        }
+
+        if(profile_type == "delta")
+        {
+            G4int numBins = 100;
+            mBeamProfile.reset(
+                new TH2D("h2", "Uniform beam profile hist", numBins, - mProfileRadius, mProfileRadius, numBins, - mProfileRadius, mProfileRadius)
+            );
+
+            mBeamProfile->Fill(0.,0.);
+        }
+        //////////////////
+
+        ////////////////// Set up Moderator
+        std::string mModeratorType = mConfig["generator"]["moderator_distribution"]["tof_type"].as<std::string>();
+        if(mModeratorType == "ntof") 
+        {
+            mModeratorFileName = mConfig["generator"]["moderator_distribution"]["tof_file"].as<std::string>();
+            mModeratorName = mConfig["generator"]["moderator_distribution"]["tof_name"].as<std::string>();
+            mModeratorFile = new TFile(mModeratorFileName);
             // Set up tof profile and projections
-            mnTOFTOF.reset((TH2D*)mnTOFTOFFile->Get(mnTOFTOFName));
+            mModeratorDistribution.reset((TH2D*)mModeratorFile->Get(mModeratorName));
             
-            auto beam_x = mnTOFTOF->GetXaxis();
+            auto beam_x = mModeratorDistribution->GetXaxis();
             auto num_bins = beam_x->GetNbins();
             for(G4int ii = 0; ii < num_bins; ii++)
             {
                 std::string projection_name = "profile_" + std::to_string(ii);
-                TH1D* projection = (TH1D*)mnTOFTOF->ProjectionY(
+                TH1D* projection = (TH1D*)mModeratorDistribution->ProjectionY(
                     projection_name.c_str(),
                     ii, ii+1
                 );
-                mnTOFTOFProjections.emplace_back(projection);
+                mModeratorProjections.emplace_back(projection);
             }
         }
+        //////////////////
+
+        ////////////////// Set up Momentum distribution
+
+        ////////////////// 
 
         G4GDMLParser* mGDMLParser;
 
@@ -298,44 +366,6 @@ namespace marex
             G4cout << "File - " + OutputFile
                 << " - opened successfully." << G4endl;
         }
-    }
-
-    void EventManager::ConstructEnergyDistribution()
-    {
-#ifdef MAREX_ROOT
-        mLANLEnergyDistributionFile = new TFile(mLANLEnergyDistributionFileName);
-        TGraph *DistributionGraph = (TGraph*)mLANLEnergyDistributionFile->Get(mLANLEnergyDistributionName);
-
-        // Make variable-bin histogram for beam energy
-        const G4int nlogbins=500;        
-        G4double xmin = 1.e-3;  //eV
-        G4double xmax = 1.e7;   //eV
-        G4double *xbins = new G4double[nlogbins+1];
-        G4double xlogmin = TMath::Log10(xmin);
-        G4double xlogmax = TMath::Log10(xmax);
-        G4double dlogx   = (xlogmax-xlogmin)/((G4double)nlogbins);
-        for (G4int i=0;i<=nlogbins;i++) 
-        {
-            G4double xlog = xlogmin+ i*dlogx;
-            xbins[i] = TMath::Exp( TMath::Log(10) * xlog ); 
-        }
-
-        mLANLEnergyDistribution.reset(
-            new TH1D("LANLBeamEnergy", "LANLBeamEnergy", nlogbins, xbins)
-        );
-        auto nPoints = DistributionGraph->GetN(); // number of points 
-        G4double x, y;
-        for(G4int i=0; i < nPoints; ++i) {
-            DistributionGraph->GetPoint(i, x, y); //eV
-            if( 
-                x / 1000 > mEnergyCutLow && 
-                x / 1000 < mEnergyCutHigh
-            ) 
-            {
-                mLANLEnergyDistribution->Fill(x,y);
-            }
-        }
-#endif
     }
 
     void EventManager::CloseOutputFile(G4int RunID)

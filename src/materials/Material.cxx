@@ -15,19 +15,19 @@ namespace marex
         if(material_name == "gaseous_argon") {
             material = G4NistManager::Instance()->FindOrBuildMaterial("G4_Ar");
         }
-        else if(material_name == "gaseous_argon_300bar") {
-            G4Isotope* Ar36 = new G4Isotope("Ar36", 18., 36, 35.9675*g/mole);
-            G4Isotope* Ar38 = new G4Isotope("Ar38", 18., 38, 37.9627*g/mole);
-            G4Isotope* Ar40 = new G4Isotope("Ar40", 18., 40, 39.9624*g/mole);
+        // else if(material_name == "gaseous_argon_300bar") {
+        //     G4Isotope* Ar36 = new G4Isotope("Ar36", 18., 36, 35.9675*g/mole);
+        //     G4Isotope* Ar38 = new G4Isotope("Ar38", 18., 38, 37.9627*g/mole);
+        //     G4Isotope* Ar40 = new G4Isotope("Ar40", 18., 40, 39.9624*g/mole);
 
-            G4Element* elAr  = new G4Element("Natural Argon", "Ar", 3);
-            elAr->AddIsotope(Ar36,0.334*perCent);
-            elAr->AddIsotope(Ar38,0.063*perCent);
-            elAr->AddIsotope(Ar40,99.603*perCent);
+        //     G4Element* elAr  = new G4Element("Natural Argon", "Ar", 3);
+        //     elAr->AddIsotope(Ar36,0.334*perCent);
+        //     elAr->AddIsotope(Ar38,0.063*perCent);
+        //     elAr->AddIsotope(Ar40,99.603*perCent);
 
-            material = new G4Material("Gaseous Argon 300bar", 0.4837 * g/cm3, 1);
-            material->AddElement(elAr, 1);
-        }
+        //     material = new G4Material("Gaseous Argon 300bar", 0.4837 * g/cm3, 1);
+        //     material->AddElement(elAr, 1);
+        // }
         else if(material_name == "liquid_argon") {
             if(EventManager::GetEventManager()->UseG4Definition()) {
                 material = G4NistManager::Instance()->FindOrBuildMaterial("G4_lAr");
@@ -160,6 +160,35 @@ namespace marex
         {
             std::cerr << "ERROR! Material (" + material_name + ") not recognized!" << G4endl;
             exit(0);
+        }
+        material->SetName(volume_name + "_" + material_name);
+        return material;
+    }
+
+    G4Material* CreateMaterial(G4String material_name, G4String volume_name, G4double pressure)
+    {
+        G4Material* material;
+        if(material_name == "gaseous_argon") {
+            G4Isotope* Ar36 = new G4Isotope("Ar36", 18., 36, 35.9675*g/mole);
+            G4Isotope* Ar38 = new G4Isotope("Ar38", 18., 38, 37.9627*g/mole);
+            G4Isotope* Ar40 = new G4Isotope("Ar40", 18., 40, 39.9624*g/mole);
+
+            G4Element* elAr  = new G4Element("Natural Argon", "Ar", 3);
+            elAr->AddIsotope(Ar36,0.334*perCent);
+            elAr->AddIsotope(Ar38,0.063*perCent);
+            elAr->AddIsotope(Ar40,99.603*perCent);
+
+            G4double Ar_molar_density = 39.948*g/mole;
+            G4double R = 8.314472*joule/kelvin/mole;
+            G4double temperature = 298*kelvin;
+            G4double gas_density = (pressure*Ar_molar_density)/(R*temperature); // (pressure*39.948)/(8.314*298*10) * g/cm3;
+            material = new G4Material("Gaseous Argon 300bar", gas_density, 1);
+            material->AddElement(elAr, 1);
+
+            // G4double gas_density = 39.948*g/mole;
+            // G4double temperature = STP_Temperature;
+            // material = new G4Material("Gaseous Argon 300bar", gas_density, 1, kStateGas, temperature, pressure*bar);
+            // material->AddElement(elAr, 1);
         }
         material->SetName(volume_name + "_" + material_name);
         return material;

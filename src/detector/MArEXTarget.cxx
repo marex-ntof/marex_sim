@@ -22,10 +22,11 @@ namespace marex
     MArEXTarget::MArEXTarget(YAML::Node config)
     : mConfig(config)
     {
-        if(mConfig["MArEX_target"]["target_entrance"]) { mTargetEntrance = mConfig["MArEX_target"]["target_entrance"].as<G4double>() * m; }
+        if(mConfig["MArEX_target"]["target_placement"]) { mTargetPlacement = mConfig["MArEX_target"]["target_placement"].as<G4double>() * m; }
         if(mConfig["MArEX_target"]["target_x"]) { mTargetX = mConfig["MArEX_target"]["target_x"].as<G4double>() * cm; }
         if(mConfig["MArEX_target"]["target_y"]) { mTargetY = mConfig["MArEX_target"]["target_y"].as<G4double>() * cm; }
         if(mConfig["MArEX_target"]["active_volume_material"]) { mActiveVolumeMaterialName = mConfig["MArEX_target"]["active_volume_material"].as<std::string>(); }
+        if(mConfig["MArEX_target"]["gas_pressure"])           { mGasPressure = mConfig["MArEX_target"]["gas_pressure"].as<G4double>() * bar; }
         if(mConfig["MArEX_target"]["target_radius"])          { mTargetRadius = mConfig["MArEX_target"]["target_radius"].as<G4double>() * cm; }
         if(mConfig["MArEX_target"]["target_length"])          { mTargetLength = mConfig["MArEX_target"]["target_length"].as<G4double>() * cm; }
         
@@ -44,7 +45,11 @@ namespace marex
 
     void MArEXTarget::DefineMaterials()
     {
-        mActiveVolumeMaterial = CreateMaterial(mActiveVolumeMaterialName, "ActiveVolume");
+        if(mGasPressure != 0){
+            mActiveVolumeMaterial = CreateMaterial(mActiveVolumeMaterialName, "ActiveVolume", mGasPressure);
+        } else {
+            mActiveVolumeMaterial = CreateMaterial(mActiveVolumeMaterialName, "ActiveVolume");
+        }
 
         mContainerShellMaterial = CreateMaterial(mContainerShellMaterialName, "ContainerOuter");
         mContainerInnerMaterial = CreateMaterial(mContainerInnerMaterialName, "ContainerInner");
@@ -58,7 +63,12 @@ namespace marex
     {
         DefineMaterials();
         G4double mContainerThickness = mContainerOuterRadius - mContainerInnerRadius;
-        G4double mTargetZ = mTargetEntrance + 0.5 * mContainerLength;
+        G4double mTargetZ = mTargetPlacement; // mTargetEntrance + 0.5 * mContainerLength;
+        // G4double pi  = 3.14159265358979323846;
+        // G4double halfpi = pi/2;
+        G4RotationMatrix* xRot = new G4RotationMatrix;
+        xRot->rotateX(M_PI/2.0*rad);
+
         if (!mConfig["MArEX_target"]["target_length"])
         {
             mTargetLength = mContainerLength - 2.0 * mContainerThickness;
@@ -79,7 +89,7 @@ namespace marex
             "Logical_MArEXTargetContainerInner"
         );
         mPhysicalContainerInner = new G4PVPlacement(
-            0, 
+            xRot, //0
             G4ThreeVector(mTargetX, mTargetY, mTargetZ),
             mLogicalContainerInner, 
             "Physical_MArEXTargetContainerInner", 
@@ -104,7 +114,7 @@ namespace marex
             "Logical_MArEXActiveVolume"
         );
         mPhysicalActiveVolume = new G4PVPlacement(
-            0, 
+            0, //0
             G4ThreeVector(0.,0.,0.), 
             mLogicalActiveVolume, 
             "Physical_MArEXActiveVolume", 
@@ -131,7 +141,7 @@ namespace marex
                 "Logical_MArEXTargetContainerShell"
             );
             mPhysicalContainerShell = new G4PVPlacement(
-                0, 
+                0, //0
                 G4ThreeVector(0,0,0),
                 mLogicalContainerShell, 
                 "Physical_MArEXTargetContainerShell", 
@@ -141,7 +151,7 @@ namespace marex
                 true
             );
 
-            // construct container right end
+            // construct container right (or top) end
             mSolidContainerRightEnd = new G4Tubs(
                 "Solid_MArEXTargetContainerRightEnd", 
                 0,
@@ -156,8 +166,8 @@ namespace marex
                 "Logical_MArEXTargetContainerRightEnd"
             );
             mPhysicalContainerRightEnd = new G4PVPlacement(
-                0, 
-                G4ThreeVector(0,0, - (0.5 * mTargetLength + 0.5 * mContainerThickness)),
+                0, //0 
+                G4ThreeVector(0,0,-(0.5 * mTargetLength + 0.5 * mContainerThickness)),
                 mLogicalContainerRightEnd, 
                 "Physical_MArEXTargetContainerRightEnd", 
                 mLogicalContainerInner,
@@ -166,7 +176,7 @@ namespace marex
                 true
             );
 
-            // construct container left end
+            // construct container left (or bottom) end
             mSolidContainerLeftEnd = new G4Tubs(
                 "Solid_MArEXTargetContainerLeftEnd", 
                 0,

@@ -41,7 +41,7 @@ namespace marex
         virtual void GeneratePrimaries(G4Event* event);
         void ConstructEnergyDistribution();
         G4double SampleBeamEnergy();
-        G4double SampleTOF(G4double beam_energy);
+        G4double SampleModerator(G4double beam_energy);
         G4ThreeVector SampleBeamProfile(G4double t_zero_location);
         G4ThreeVector SampleBeamMomentum(G4ThreeVector StartPosition);
 
@@ -62,15 +62,13 @@ namespace marex
         G4double mEnergyCutLow =    { 40 * keV };
         G4double mEnergyCutHigh =   { 70 * keV };
 
-        G4bool mUsenTOFDistribution = { false };
-        G4bool mUseUniformDistribution = { false };
-
-        G4bool mUsenTOFBeamProfile = { false };
-        G4bool mUsenTOFTOF = { false };
+        G4bool mUseTOFDistribution = { false };
+        G4bool mUseModerator = { false };
         
-        TH1D* mnTOFTOFDistribution = {0};
-        TH2D* mnTOFBeamProfile = {0};
-        TH2D* mnTOFTOF = {0};
+        TH1D* mEnergyDistribution = {0};
+        TH1D* mTOFDistribution = {0};
+        TH2D* mBeamProfile = {0};
+        TH2D* mModerator = {0};
 
         TRandom3* mTRandom3 = {0};
 

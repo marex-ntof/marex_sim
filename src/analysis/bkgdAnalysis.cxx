@@ -19,7 +19,8 @@ namespace marex
         G4int index = Manager->GetIndex("bkgdAnalysis");
         AnalysisManager->CreateNtuple("bkgdAnalysis", "bkgdAnalysis");
         AnalysisManager->CreateNtupleDColumn("n_energy");
-        AnalysisManager->CreateNtupleDColumn("n_energy_detected");
+        AnalysisManager->CreateNtupleIColumn("detectionStatus");
+        // AnalysisManager->CreateNtupleDColumn("n_energy_detected");
         AnalysisManager->CreateNtupleDColumn("n_tof_bkgd");
         AnalysisManager->FinishNtuple(index);
     }
@@ -49,10 +50,12 @@ namespace marex
                 // bkgdTuple.n_energy = randEvt;
                 // bkgdTuple.n_energy_detected = randEvt;
                 bkgdTuple.n_tof_bkgd = randEvt;
+                bkgdTuple.detectionStatus = true;
 
                 // G4cout << "Random bkgd energy [ " << i <<  " ] : " << randEvt << G4endl;
                 // AnalysisManager->FillNtupleDColumn(index, 0, bkgdTuple.n_energy);
                 // AnalysisManager->FillNtupleDColumn(index, 1, bkgdTuple.n_energy_detected);
+                AnalysisManager->FillNtupleIColumn(index, 1, bkgdTuple.detectionStatus);
                 AnalysisManager->FillNtupleDColumn(index, 2, bkgdTuple.n_tof_bkgd);
                 AnalysisManager->AddNtupleRow(index);
             }
@@ -100,8 +103,8 @@ namespace marex
                 auto y_i = trajectory.y[i]/1000.0;
                 auto z_i = trajectory.z[i]/1000.0;
                 // end points
-                auto x_f = trajectory.x[i+1]/1000.0;  //m
-                auto y_f = trajectory.y[i+1]/1000.0;
+                // auto x_f = trajectory.x[i+1]/1000.0;  //m
+                // auto y_f = trajectory.y[i+1]/1000.0;
                 // auto z_f = trajectory.z[i+1]/1000.0;
 
                 if (x_i != x_start || y_i != y_start)
@@ -111,14 +114,24 @@ namespace marex
 
                 if (x_i == x_start && y_i == y_start)
                 {
-                    if (z_i >= detEntrance && z_i <= detEntrance + detLength) // Checking if the point is in the detector
+                    // if (z_i >= detEntrance && z_i <= detEntrance + detLength) // Checking if the point is in the detector
+                    // {
+                    //     if (x_f != x_start || y_f != y_start) // Checking if it scatters in the detector
+                    //     {
+                    //         bkgdTuple.n_energy_detected = trajectory.E[0];
+                    //         AnalysisManager->FillNtupleDColumn(index, 1, bkgdTuple.n_energy_detected);
+                    //         break;
+                    //     }
+                    // }
+
+                    if (z_i >= detEntrance)
                     {
-                        if (x_f != x_start || y_f != y_start) // Checking if it scatters in the detector
-                        {
-                            bkgdTuple.n_energy_detected = trajectory.E[0];
-                            AnalysisManager->FillNtupleDColumn(index, 1, bkgdTuple.n_energy_detected);
-                            break;
-                        }
+                        // bkgdTuple.n_energy_detected = trajectory.E[0];
+                        // AnalysisManager->FillNtupleDColumn(index, 1, bkgdTuple.n_energy_detected);
+
+                        bkgdTuple.detectionStatus = true;
+                        AnalysisManager->FillNtupleIColumn(index, 1, bkgdTuple.detectionStatus);
+                        break;
                     }
                 }
             }

@@ -36,36 +36,26 @@ namespace marex
         if(mConfig["generator"]["t_zero_location"])  { 
             mTZeroLocation = mConfig["generator"]["t_zero_location"].as<G4double>() * m; 
         }
-        if(mConfig["generator"]["energy_cut_low"])   { 
-            mEnergyCutLow = mConfig["generator"]["energy_cut_low"].as<G4double>() * keV; 
-        }
-        if(mConfig["generator"]["energy_cut_high"])  { 
-            mEnergyCutHigh = mConfig["generator"]["energy_cut_high"].as<G4double>() * keV; 
-        }
         
-        std::string distribution_type = mConfig["generator"]["energy_distribution"]["distribution_type"].as<std::string>();
-        std::string profile_type = mConfig["generator"]["beam_profile"]["profile_type"].as<std::string>();
-        std::string tof_type = mConfig["generator"]["time_of_flight"]["tof_type"].as<std::string>();
-
+        std::string distribution_type = mConfig["generator"]["distribution_type"].as<std::string>();
+        std::string moderator_type = mConfig["generator"]["moderator_distribution"]["tof_type"].as<std::string>();
+        
         // Set up energy distribution 
-        if(distribution_type == "ntof")
+        if(distribution_type == "tof")
         {
-            mUsenTOFDistribution = true;
-            mnTOFTOFDistribution = EventManager::GetEventManager()->GetnTOFTOFDistribution();
+            mUseTOFDistribution = true;
+            mTOFDistribution = EventManager::GetEventManager()->GetTOFDistribution();
         }
-        else
-        {
-            mUseUniformDistribution = true;
+        else {
+            mUseTOFDistribution = false;
+            mEnergyDistribution = EventManager::GetEventManager()->GetEnergyDistribution();
         }
-        if(profile_type == "ntof")
+        if(moderator_type == "ntof")
         {
-            mUsenTOFBeamProfile = true;
-            mnTOFBeamProfile = EventManager::GetEventManager()->GetnTOFBeamProfile();
+            mUseModerator = true;
         }
-        if(tof_type == "ntof")
-        {
-            mUsenTOFTOF = true;
-        }        
+
+        mBeamProfile = EventManager::GetEventManager()->GetBeamProfile();
         
         mTRandom3 = new TRandom3();
         mParticleGun = new G4ParticleGun();
@@ -79,34 +69,24 @@ namespace marex
 
     G4double PrimaryGeneratorAction::SampleBeamEnergy()
     {
-        if(mUsenTOFDistribution) {
-            G4double ranTOF = mnTOFTOFDistribution->GetRandom() * ns;
+        if(mUseTOFDistribution) {
+            G4double ranTOF = mTOFDistribution->GetRandom();
             return EventManager::GetEventManager()->GetEnergyFromTOF(ranTOF) * MeV;
         }
         else {
-            // Uniform in TOF
-            // auto Manager = EventManager::GetEventManager();
-            // G4double lenFlightPath = mDetEntrance - mTZeroLocation;
-            // G4double tofLow = Manager->GetNominalTOF(mEnergyCutHigh);
-            // G4double tofHigh = Manager->GetNominalTOF(mEnergyCutLow);
-            // G4double n_tof = tofLow + (tofHigh - tofLow) * G4UniformRand();
-            // G4double n_energy = 0.5 * NeutronMassMeV() * lenFlightPath * lenFlightPath / (SpeedOfLight() * SpeedOfLight() * n_tof * n_tof);
-            // return (n_energy * MeV);
-
-            // Uniform in Energy
-            return (mEnergyCutLow + (mEnergyCutHigh - mEnergyCutLow) * G4UniformRand());
+            return mEnergyDistribution->GetRandom();
         }
     }
 
-    G4double PrimaryGeneratorAction::SampleTOF(G4double beam_energy)
+    G4double PrimaryGeneratorAction::SampleModerator(G4double beam_energy)
     {
-        if(mUsenTOFTOF)
+        if(mUseModerator)
         {
             Double_t nominalTOF = EventManager::GetEventManager()->GetNominalTOF(beam_energy);
             Double_t nominalVelocity = EventManager::GetEventManager()->GetNominalVelocity(beam_energy);
-            mnTOFTOF = EventManager::GetEventManager()->GetnTOFTOF();
-            Int_t energy_bin = mnTOFTOF->GetXaxis()->FindBin(beam_energy * MeV);
-            TH1D* TOF = EventManager::GetEventManager()->GetnTOFTOFProjection(energy_bin);
+            mModerator = EventManager::GetEventManager()->GetModeratorDistribution();
+            Int_t energy_bin = mModerator->GetXaxis()->FindBin(beam_energy * MeV);
+            TH1D* TOF = EventManager::GetEventManager()->GetModeratorProjection(energy_bin);
             Double_t lambda = TOF->GetRandom() * cm;   
             return lambda / (nominalVelocity);
         }
@@ -119,10 +99,7 @@ namespace marex
     {
         Double_t x = 0.0;
         Double_t y = 0.0;
-
-        if(mUsenTOFBeamProfile) {
-            mnTOFBeamProfile->GetRandom2(x, y, mTRandom3);
-        }
+        mBeamProfile->GetRandom2(x, y, mTRandom3);
         return G4ThreeVector(x, y, t_zero_location);
     }
 
@@ -137,7 +114,7 @@ namespace marex
     {
         mParticleGun->SetNumberOfParticles(1);
         G4double BeamEnergy = SampleBeamEnergy();
-        G4double deltaTOF = SampleTOF(BeamEnergy);
+        G4double deltaTOF = SampleModerator(BeamEnergy);
         G4ThreeVector StartPosition = SampleBeamProfile(mTZeroLocation);
         G4ThreeVector StartMomentum = SampleBeamMomentum(StartPosition);
         mParticleGun->SetParticleTime(deltaTOF);

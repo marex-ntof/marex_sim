@@ -190,17 +190,13 @@ namespace marex
         inline static thread_local G4int GetNumberOfParticles()         { return mParticleName.size(); }
         inline static thread_local G4int GetNumberOfSimulatedParticles(){ return mParticleName.size(); }
 
-        // lanl distribution
-        void ConstructEnergyDistribution();
+        // ntof distributions
 #ifdef MAREX_ROOT
-        TH1D* GetLANLEnergyDistribution()       { return mLANLEnergyDistribution.get(); }
-        TH1D* GetLANLTOFHist(G4int ii)          { return mLANLTOFHists[ii].get(); }
-        TH2D* GetLANLBeamProfile()              { return mLANLBeamProfile.get(); }
-
-        TH1D* GetnTOFTOFDistribution()          { return mnTOFTOFDistribution.get(); }
-        TH2D* GetnTOFTOF()                      { return mnTOFTOF.get(); }
-        TH1D* GetnTOFTOFProjection(G4int ii)    { return mnTOFTOFProjections[ii].get(); }
-        TH2D* GetnTOFBeamProfile()              { return mnTOFBeamProfile.get(); }
+        TH1D* GetEnergyDistribution()               { return mEnergyDistribution.get(); }
+        TH1D* GetTOFDistribution()                  { return mTOFDistribution.get(); }
+        TH2D* GetModeratorDistribution()            { return mModeratorDistribution.get(); }
+        TH1D* GetModeratorProjection(G4int ii)      { return mModeratorProjections[ii].get(); }
+        TH2D* GetBeamProfile()                      { return mBeamProfile.get(); }
 #endif
         //*************************************************************************************************//
         // Options to save various data to root files.
@@ -453,45 +449,39 @@ namespace marex
 
         inline static G4double mEnergyCutLow = { 40 * keV };
         inline static G4double mEnergyCutHigh = { 70 * keV };
+        inline static G4double mTOFCutLow = { 0 * ns };
+        inline static G4double mTOFCutHigh = { 100000 * ns };
+        inline static G4int mTOFPowerLow = { 1 };
+        inline static G4int mTOFPowerHigh = { 5 };
         inline static G4double mTZeroLocation = {-1 * m};
         inline static G4double mDetectorEntrance = {30.0 * m};
-        
-        // LANL energy distribution
-        inline static G4String mLANLEnergyDistributionFileName = {"resolution13a.root"};
-        inline static G4String mLANLEnergyDistributionName = {"tally5"};
-        inline static TFile* mLANLEnergyDistributionFile = {0};
-        inline static std::shared_ptr<TH1D> mLANLEnergyDistribution = {nullptr};
+        inline static G4double mProfileRadius = { 10 * mm};
+        inline static G4double mProfileSigma = { 47 * mm};
 
-        // LANL beam profile
-        inline static G4String mLANLBeamProfileFileName = {"resolution13a.root"};
-        inline static G4String mLANLBeamProfileName = {"tally5"};
-        inline static TFile mLANLBeamProfileFile = {0};
-        inline static std::shared_ptr<TH2D> mLANLBeamProfile = {nullptr};
+        // neutron beam Energy distribution
+        inline static G4String mEnergyDistributionFileName = {"evalflux.root"};
+        inline static G4String mEnergyDistributionName = {"hEval_Abs"};
+        inline static TFile* mEnergyDistributionFile = {0};
+        inline static std::shared_ptr<TH1D> mEnergyDistribution = {nullptr};
 
-        // LANL tof distribution
-        inline static G4String mLANLTOFFileName = {"resolution13a.root"};
-        inline static G4String mLANLTOFName = {"tally15"};
-        inline static TFile* mLANLTOFFile = {0};
-        inline static std::vector<std::shared_ptr<TH1D>> mLANLTOFHists = {};
+        // neutron beam TOF distribution
+        inline static G4String mTOFDistributionFileName = {"Neutron_Gamma_Flux_1cmColli_188m.root"};
+        inline static G4String mTOFDistributionName = {"histfluka"};
+        inline static TFile* mTOFDistributionFile = {0};
+        inline static std::shared_ptr<TH1D> mTOFDistribution = {nullptr};
 
-        // nTOF neutron beam TOF distribution
-        inline static G4String mnTOFTOFDistributionFileName = {"Neutron_Gamma_Flux_1cmColli_188m.root"};
-        inline static G4String mnTOFTOFDistributionName = {"histfluka"};
-        inline static TFile* mnTOFTOFDistributionFile = {0};
-        inline static std::shared_ptr<TH1D> mnTOFTOFDistribution = {nullptr};
+        //  beam profile
+        inline static G4String mBeamProfileFileName = {"Profile_188m.root"};
+        inline static G4String mBeamProfileName = {"histfluka"};
+        inline static TFile* mBeamProfileFile = {0};
+        inline static std::shared_ptr<TH2D> mBeamProfile = {nullptr};
 
-        // nTOF beam profile
-        inline static G4String mnTOFBeamProfileFileName = {"Profile_188m.root"};
-        inline static G4String mnTOFBeamProfileName = {"histfluka"};
-        inline static TFile* mnTOFBeamProfileFile = {0};
-        inline static std::shared_ptr<TH2D> mnTOFBeamProfile = {nullptr};
-
-        // nTOF tof distribution (Moderator function)
-        inline static G4String mnTOFTOFFileName = {"RF.root"};
-        inline static G4String mnTOFTOFName = {"histfluka"};
-        inline static TFile* mnTOFTOFFile = {0};
-        inline static std::shared_ptr<TH2D> mnTOFTOF = {nullptr};
-        inline static std::vector<std::shared_ptr<TH1D>> mnTOFTOFProjections = {};
+        //  tof distribution (Moderator function)
+        inline static G4String mModeratorFileName = {"RF.root"};
+        inline static G4String mModeratorName = {"histfluka"};
+        inline static TFile* mModeratorFile = {0};
+        inline static std::shared_ptr<TH2D> mModeratorDistribution = {nullptr};
+        inline static std::vector<std::shared_ptr<TH1D>> mModeratorProjections = {};
 
         inline static G4bool mSavedParameters = {false};
         inline static YAML::Node mConfig;    

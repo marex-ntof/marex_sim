@@ -18,4 +18,6 @@
 namespace marex
 {
     G4Material* CreateMaterial(G4String material, G4String volume);
+
+    G4Material* CreateMaterial(G4String material_name, G4String volume_name, G4double pressure);
 }
