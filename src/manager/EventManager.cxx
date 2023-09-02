@@ -1167,18 +1167,6 @@ namespace marex
                 mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
                 mNeutronEventData[neutron_index].arrival_energy = postStepPoint->GetKineticEnergy();
             }
-            else if(step->IsFirstStepInVolume() && volumeName == "Logical_TargetDetectorLeft")
-            {
-                mNeutronEventData[neutron_index].detector = 0;
-                mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
-                mNeutronEventData[neutron_index].arrival_energy = postStepPoint->GetKineticEnergy();
-            }
-            else if(step->IsFirstStepInVolume() && volumeName == "Logical_TargetDetectorRight")
-            {
-                mNeutronEventData[neutron_index].detector = 1;
-                mNeutronEventData[neutron_index].arrival_time = track->GetGlobalTime();
-                mNeutronEventData[neutron_index].arrival_energy = postStepPoint->GetKineticEnergy();
-            }
 
             // Quantify scattering
             if (dp > 0)

@@ -23,7 +23,6 @@ namespace marex
     {
         auto Manager = EventManager::GetEventManager();
         Manager->EvaluateEventBegin();
-        // Manager->ClearEventData();
     }
 
     void EventAction::EndOfEventAction(const G4Event* event)

@@ -4,7 +4,7 @@ manager:
     number_of_runs:     1
     number_of_events:   10
     seed:               924835098
-    mode:               "run"   # interactive/run
+    mode:               "interactive"   # interactive/run
     detector:           "artieII"
     output_filename:    "ntof_test" # ntof_3milevts_gasAr_filter_out # "ntof_gasAr_brassCol_20cm_5mm_uniformE" # ntof_uniformBkgd_3milevts_5cmFilter_out
     save_particle_maps: true
