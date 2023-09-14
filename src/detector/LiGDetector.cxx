@@ -28,7 +28,7 @@ namespace marex
         if(mConfig["detector"]["detector_length"])      { mDetectorLength = mConfig["detector"]["detector_length"].as<G4double>() * cm; }
         if(mConfig["detector"]["detector_entrance"])    { mDetectorEntrance = mConfig["detector"]["detector_entrance"].as<G4double>() * m; }    
 
-        if(mConfig["hall"]["world_material"])           { mWorldMaterialName = mConfig["hall"]["world_material"].as<std::string>(); }
+        if(mConfig["world"]["world_material"])           { mWorldMaterialName = mConfig["world"]["world_material"].as<std::string>(); }
 
         DefineMaterials();
     }

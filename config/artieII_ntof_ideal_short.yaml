@@ -2,11 +2,11 @@
 manager:
     number_of_threads:  6
     number_of_runs:     1
-    number_of_events:   10
+    number_of_events:   5000
     seed:               924835098
     mode:               "interactive"   # interactive/run
     detector:           "artieII"
-    output_filename:    "ntof_test" # ntof_3milevts_gasAr_filter_out # "ntof_gasAr_brassCol_20cm_5mm_uniformE" # ntof_uniformBkgd_3milevts_5cmFilter_out
+    output_filename:    "ntof_test" # ntof_3milevts_gasAr_filter_Al_8cm # "ntof_gasAr_brassCol_20cm_5mm_uniformE" # ntof_uniformBkgd_3milevts_5cmFilter_out
     save_particle_maps: true
     save_primary_info:  true
     save_particle_info: true
@@ -21,7 +21,7 @@ analysis:
     N_x: 8
     N_y: 8
     N_z: 15
-    background_neutrons:  6
+    background_neutrons:  0
     distribution_type:    "Uniform"
 
 # physics lists
@@ -67,8 +67,8 @@ argon:
 
 # generator parameters
 generator:
-    energy_cut_low:         0.000001      # keV
-    energy_cut_high:        20000 # 1000000.0     # keV
+    energy_cut_low:         1      # keV # 0.000001
+    energy_cut_high:        100 # keV # 1000000.0
     tof_cut_low:            0 #ns or power
     tof_cut_high:           1000000 #ns or power
     tof_power_low:          1
@@ -91,8 +91,8 @@ generator:
         profile_type:   "gaussian"      # "ntof", "delta", "gaussian", "uniform"
         profile_file:   "data/gausProfile.root" # "data/Profile_188m.root" # 
         profile_name:   "ProfileHist2D" # "histfluka" # 
-        profile_sigma:  47 #mm
-        profile_radius: 10 #mm
+        profile_sigma:  47  #mm
+        profile_radius: 125 #mm
         
     moderator_distribution:
         tof_type:       "ntof" # "none",
@@ -108,28 +108,45 @@ nTOF:
     beam_material:          "high_vacuum"
     beam_pipe_inner_radius: 12.5    # cm
     beam_pipe_outer_radius: 15.0    # cm
-    beam_pipe_length:       170     # m
+    beam_pipe_length:       168     # m
     beam_pipe_entrance:     0.0     # m
 
-    beam_pipe_middle_z_start: 176.0 # m
-    beam_pipe_middle_z_end: 178.88 # m
+EAR1:
+    construct_beam_pipe_middle:    true    # bool
+    beam_pipe_middle_z_start:      176.0 # m
+    beam_pipe_middle_z_end:        178.88 # m
     beam_pipe_middle_inner_radius: 5.0    # cm
     beam_pipe_middle_outer_radius: 9.75    # cm
 
-collimators:
-    construct_collimator_upstream:  false
-    collimator_upstream_length:     20.0 # cm
-    collimator_upstream_radius:     5.0 # cm
-    collimator_upstream_hole_dia:   5.0 # mm
-    collimator_upstream_z:          184.0 # m
-    collimator_upstream_material:   "brass"
+    construct_hall:         false    # bool
+    hall_material:          "concrete"
+    hall_z_start:           170     # m
+    hall_z_end:             190     # m
+    hall_width:             3       # m
+    hall_height:            3       # m
+    hall_thickness:         0.5     # m
 
-    construct_collimator_downstream:  true
-    collimator_downstream_length:     135.0 # cm
-    collimator_downstream_radius:     17.5 # cm
-    collimator_downstream_hole_dia:   18.0 # mm
-    collimator_downstream_z:          174.0 # m
-    collimator_downstream_material:   "stainless_steel"
+    construct_detector_wall:    false
+    wall_material:              "concrete"
+    detector_wall_thickness:    3.2 # m
+    detector_wall_z:            176.0 # m
+    detector_wall_hole_dia:     20.0 #cm
+
+    construct_beam_collimator:       true
+    beam_collimator_material:        "stainless_steel"
+    beam_collimator_z:               170 #m
+    beam_collimator_thickness:       66 #mm
+    beam_collimator_radius:          150 #mm
+    beam_collimator_hole_1_dia:      218 #mm
+    beam_collimator_hole_2_dia:      90 #mm
+
+collimators:
+    construct_collimator:  true
+    collimator_length:     135.0 # cm
+    collimator_radius:     17.5 # cm
+    collimator_hole_dia:   18.0 # mm
+    collimator_z:          174.0 # m
+    collimator_material:   "stainless_steel"
 
     construct_boratedPE:    true
     boratedPE_length:       50.0 #cm
@@ -159,26 +176,14 @@ filters:
     filter_x_position:  [0] #, 2.475, -2.475, 2.475, -2.475
     filter_z_position:  [172]  # m #, 15.6, 15.6, 15.65, 15.65
     filter_thickness:   [8]  # cm #, 2.54, 2.54, 2.54, 2.54
-    filter_radius:      [12.5] # cm #, 4.0, 4.0, 4.0, 4.0
+    filter_radius:      [14] # cm #, 4.0, 4.0, 4.0, 4.0
 
-hall:
+world:
     # gap:                    2.5     # m
     world_x:                4       # m                 
     world_y:                4       # m
-    world_z:                205     # m
+    world_z:                200     # m
     world_material:         "high_vacuum"
-
-    construct_hall:         false    # bool
-    hall_material:          "concrete"
-    hall_length:            202     # m
-    hall_width:             3       # m
-    hall_height:            3       # m
-    hall_thickness:         0.5     # m
-
-    construct_detector_wall:    true
-    detector_wall_thickness:    3.2 # m
-    detector_wall_z:            176.0 # m
-    detector_wall_hole_dia:     20.0 #cm
 
 # ARTIE-II detector
 detector:

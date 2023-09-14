@@ -111,9 +111,9 @@ namespace marex
                 mBkgdDistType = mConfig["analysis"]["distribution_type"].as<std::string>(); 
             }
         }
-        if(mConfig["hall"]["world_x"]) { mHallX = mConfig["hall"]["world_x"].as<G4double>() * m; }
-        if(mConfig["hall"]["world_y"]) { mHallY = mConfig["hall"]["world_y"].as<G4double>() * m; }
-        if(mConfig["hall"]["world_z"]) { mHallZ = mConfig["hall"]["world_z"].as<G4double>() * m; }
+        if(mConfig["world"]["world_x"]) { mHallX = mConfig["world"]["world_x"].as<G4double>() * m; }
+        if(mConfig["world"]["world_y"]) { mHallY = mConfig["world"]["world_y"].as<G4double>() * m; }
+        if(mConfig["world"]["world_z"]) { mHallZ = mConfig["world"]["world_z"].as<G4double>() * m; }
 
         if(mConfig["detector"]["detector_length"])      { mDetLen = mConfig["detector"]["detector_length"].as<G4double>() * cm; }
         if(mConfig["detector"]["detector_entrance"])    { mDetEntrance = mConfig["detector"]["detector_entrance"].as<G4double>() * m; }

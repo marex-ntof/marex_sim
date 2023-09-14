@@ -73,55 +73,8 @@ namespace marex
         G4String mBeamPipePipeMaterialName = { "stainless_steel" };
         G4double mBeamPipeEntrance = { 0 * m };
 
-        G4double mBeamPipeMidZStart = { 185 * m };
-        G4double mBeamPipeMidZEnd = { 195 * m };
-        G4double mBeamPipeMidInnerRadius = { 5.0 * cm };
-        G4double mBeamPipeMidOuterRadius = { 9.75 * cm };
-
-        //Hall
-        G4bool mConstructHall = {true};
-        G4String mHallMaterialName = { "concrete" };
-        G4double mHallWidth = { 3 * m };
-        G4double mHallHeight = { 3 * m };
-        G4double mHallLength = { 200 * m};
-        G4double mHallThickness = { 0.5 * m };
-
-        //Detector Wall
-        G4bool mConstructDetectorWall = {true};
-        G4double mDetectorWallThickness = { 1.6 * m };
-        G4double mDetectorWallZ = { 189 * m};
-        G4double mDetectorWallHoleDia = {20.0 * cm};
-
-        //Upstream Collimator
-        G4bool mConstructUpCollimator = {true};
-        G4double mUpCollimatorLength = { 20.0 * cm };
-        G4double mUpCollimatorRadius = { 5.0 * cm };
-        G4double mUpCollimatorHoleDia = { 5.0 * mm };
-        G4double mUpCollimatorZ = { 184.0 * m };
-        G4String mUpCollimatorMaterialName = {"brass"};
-
-        //Downstream Collimator
-        G4bool mConstructDownCollimator = {true};
-        G4double mDownCollimatorLength = { 20.0 * cm };
-        G4double mDownCollimatorRadius = { 5.0 * cm };
-        G4double mDownCollimatorHoleDia = { 5.0 * mm };
-        G4double mDownCollimatorZ = { 184.7 * m };
-        G4String mDownCollimatorMaterialName = {"brass"};
-
-        //Borated PE
-        G4bool mConstructBoratedPE = {true};
-        G4double mBoratedPELength = {50*cm};
-        G4String mBoratedPEMaterialName = {"borated_polyethylene"};
-        ////////////////////////////////////
-
         //Position vectors for objects
         G4ThreeVector mBeamPipePosition;
-        G4ThreeVector mBeamPipeMidPosition;
-        G4ThreeVector mHallPosition;
-        G4ThreeVector mDetectorWallPosition;
-        G4ThreeVector mUpCollimatorPosition;
-        G4ThreeVector mDownCollimatorPosition;
-        G4ThreeVector mBoratedPEPosition;
 
         //Beam Pipe Vacuum
         G4Material* mBeamPipeVacuumMaterial;
@@ -134,45 +87,6 @@ namespace marex
         G4Tubs* mSolidBeamPipePipe;
         G4LogicalVolume* mLogicalBeamPipePipe;
         G4VPhysicalVolume* mPhysicalBeamPipePipe;
-
-        //Beam Pipe Mid Vacuum
-        G4Tubs* mSolidBeamPipeMidVacuum;
-        G4LogicalVolume* mLogicalBeamPipeMidVacuum;
-        G4VPhysicalVolume* mPhysicalBeamPipeMidVacuum;
-
-        //Beam Pipe Mid Pipe
-        G4Tubs* mSolidBeamPipeMidPipe;
-        G4LogicalVolume* mLogicalBeamPipeMidPipe;
-        G4VPhysicalVolume* mPhysicalBeamPipeMidPipe;
-
-        //nTOF Hall
-        G4Material* mHallMaterial;
-        G4SubtractionSolid* mSolidHall;
-        G4LogicalVolume* mLogicalHall;
-        G4VPhysicalVolume* mPhysicalHall;
-
-        //Detector Wall
-        G4SubtractionSolid* mSolidDetectorWall;
-        G4LogicalVolume* mLogicalDetectorWall;
-        G4VPhysicalVolume* mPhysicalDetectorWall;
-
-        //Upstream Collimator
-        G4Material* mUpCollimatorMaterial;
-        G4Tubs* mSolidUpCollimator;
-        G4LogicalVolume* mLogicalUpCollimator;
-        G4VPhysicalVolume* mPhysicalUpCollimator;
-
-        //Downstream Collimator
-        G4Material* mDownCollimatorMaterial;
-        G4Tubs* mSolidDownCollimator;
-        G4LogicalVolume* mLogicalDownCollimator;
-        G4VPhysicalVolume* mPhysicalDownCollimator;
-
-        //Borated PE
-        G4Material* mBoratedPEMaterial;
-        G4Tubs* mSolidBoratedPE;
-        G4LogicalVolume* mLogicalBoratedPE;
-        G4VPhysicalVolume* mPhysicalBoratedPE;
 
 #ifdef MAREX_YAML
         YAML::Node mConfig;

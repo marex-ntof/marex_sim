@@ -24,15 +24,16 @@ namespace marex
     , mConfig(config)
     {
 
-        if(mConfig["hall"]["world_material"])   { mWorldMaterialName = mConfig["hall"]["world_material"].as<std::string>(); }
-        if(mConfig["hall"]["world_x"])          { mExperimentalHallX = mConfig["hall"]["world_x"].as<G4double>() * m; }
-        if(mConfig["hall"]["world_y"])          { mExperimentalHallY = mConfig["hall"]["world_y"].as<G4double>() * m; }
-        if(mConfig["hall"]["world_z"])          { mExperimentalHallZ = mConfig["hall"]["world_z"].as<G4double>() * m; }
+        if(mConfig["world"]["world_material"])   { mWorldMaterialName = mConfig["world"]["world_material"].as<std::string>(); }
+        if(mConfig["world"]["world_x"])          { mExperimentalHallX = mConfig["world"]["world_x"].as<G4double>() * m; }
+        if(mConfig["world"]["world_y"])          { mExperimentalHallY = mConfig["world"]["world_y"].as<G4double>() * m; }
+        if(mConfig["world"]["world_z"])          { mExperimentalHallZ = mConfig["world"]["world_z"].as<G4double>() * m; }
 
         mTarget = Target(config);
         mMArEXTarget = MArEXTarget(config);
         mFilters = Filters(config);
         mnTOF = nTOF(config);
+        mEAR1 = EAR1(config);
 
         mSimpleDetector = SimpleDetector(config);
         mLiGDetector = LiGDetector(config);
@@ -80,6 +81,7 @@ namespace marex
         }
 
         mnTOF.Construct(mLogicalExperimentalHall);
+        mEAR1.Construct(mLogicalExperimentalHall);
 
         if(mConfig["MArEX_target"])
         {
@@ -95,7 +97,6 @@ namespace marex
         {
             mLiGDetector.Construct(mLogicalExperimentalHall);
         }
-        
 
         return mPhysicalExperimentalHall;
     }

@@ -75,7 +75,7 @@ namespace marex
         if(mConfig["target"]["outer_flange_right_side_radius"])    { mOuterFlangeRightSideRadius = mConfig["target"]["outer_flange_right_side_radius"].as<G4double>() * cm; }
         if(mConfig["target"]["outer_flange_right_side_thickness"]) { mOuterFlangeRightSideThickness = mConfig["target"]["outer_flange_right_side_thickness"].as<G4double>() * cm; }
 
-        if(mConfig["hall"]["world_material"])   { mWorldMaterialName = mConfig["hall"]["world_material"].as<std::string>(); }
+        if(mConfig["world"]["world_material"])   { mWorldMaterialName = mConfig["world"]["world_material"].as<std::string>(); }
 
         DefineMaterials();
     }

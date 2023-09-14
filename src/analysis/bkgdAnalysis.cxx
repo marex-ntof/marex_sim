@@ -41,7 +41,7 @@ namespace marex
         G4double tofLow = Manager->GetNominalTOF(eCutHigh);
         G4double tofHigh = Manager->GetNominalTOF(eCutLow);
 
-        if (bkgdDistType == "Uniform")
+        if (bkgdDistType == "Uniform" && numBkgdEvts != 0)
         {
             G4int evtsLoop = std::round(numBkgdEvts/numThreads);
             for (G4int i = 0; i < evtsLoop; i++)

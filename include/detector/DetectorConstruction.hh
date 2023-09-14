@@ -43,6 +43,7 @@
 #include "Material.hh"
 #include "Filters.hh"
 #include "nTOF.hh"
+#include "EAR1.hh"
 #include "SensitiveDetector.hh"
 #include "SimpleDetector.hh"
 #include "LiGDetector.hh"
@@ -84,6 +85,7 @@ namespace marex
         MArEXTarget mMArEXTarget;
         Filters mFilters;
         nTOF mnTOF;
+        EAR1 mEAR1;
         SimpleDetector mSimpleDetector;
         LiGDetector mLiGDetector;
 
